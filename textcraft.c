@@ -35,25 +35,32 @@ long finish;
 
 		int cx = point_getx(current);
 		int cy = point_gety(current);
-		int dx, dy;
-		for (dy = -1; dy <= +1; dy++)
+		
+		int pass;
+		for (pass = 0; pass <=1 ; pass++)
 		{
-			for (dx = -1; dx <= +1; dx++)
+			int dx, dy;
+			for (dy = -1; dy <= +1; dy++)
 			{
-				if ((dx && !dy) || (!dx && dy))
+				for (dx = -1; dx <= +1; dx++)
 				{
-					int x = cx + dx;
-					int y = cy + dy;
-					if (x >= 0 && x < map->width && y >= 0 && y < map->height && map_get(map, x, y) == ' ')
+					// first pass (0) consider non-diagonal neighbours
+					// second pass (1) consider diagonal neighbours
+					if ((!pass && ((dx && !dy) || (!dx && dy))) || (pass && dx && dy))
 					{
-						long neighbour = point_create(x, y);
-						
-						if (!list_contains(visited, (void*) neighbour, point_equals))
+						int x = cx + dx;
+						int y = cy + dy;
+						if (x >= 0 && x < map->width && y >= 0 && y < map->height && map_get(map, x, y) == ' ')
 						{
-							struct list* neighbour_path = list_clone(current_path);
-							list_add(neighbour_path, (void*) neighbour);
-							list_add(queue, neighbour_path);
-							list_add(visited, (void*) neighbour);
+							long neighbour = point_create(x, y);
+							
+							if (!list_contains(visited, (void*) neighbour, point_equals))
+							{
+								struct list* neighbour_path = list_clone(current_path);
+								list_add(neighbour_path, (void*) neighbour);
+								list_add(queue, neighbour_path);
+								list_add(visited, (void*) neighbour);
+							}
 						}
 					}
 				}
