@@ -1,9 +1,7 @@
-struct point
-{
-	int x;
-	int y;
-};
+long point_create(int, int);
 
-struct point* point_create(int, int);
+int point_getx(long);
 
-int point_equals(struct point*, struct point*);
+int point_gety(long);
+
+int point_equals(long, long);

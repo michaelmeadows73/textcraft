@@ -7,33 +7,34 @@
 
 struct list* map_shortestpath(map, start, finish)
 struct map* map;
-struct point* start;
-struct point* finish;
+long start;
+long finish;
 {
 	struct list* start_path = list_create();
-	list_add(start_path, start);
+	list_add(start_path, (void*) start);
 
 	struct list* queue = list_create();
 	list_add(queue, start_path);
 
 	struct list* visited = list_create();
-	list_add(visited, start);
+	list_add(visited, (void*) start);
 
 	while (!list_empty(queue))
 	{
-		// take the first item off the queue
 		struct list* current_path = list_getfirst(queue);
 		list_removefirst(queue);
-
-		struct point* current = list_getlast(current_path);	
 		
-		// if current equals finish then return current_path
+		long current = (long) list_getlast(current_path);	
 		if (point_equals(current, finish))
 		{
+			list_iterate(queue, list_destroy, NULL);
+			list_destroy(queue);
+			list_destroy(visited);
 			return current_path;
 		}
 
-		// add neighbours to queue
+		int cx = point_getx(current);
+		int cy = point_gety(current);
 		int dx, dy;
 		for (dy = -1; dy <= +1; dy++)
 		{
@@ -41,25 +42,30 @@ struct point* finish;
 			{
 				if ((dx && !dy) || (!dx && dy))
 				{
-					int x = current->x + dx;
-					int y = current->y + dy;
+					int x = cx + dx;
+					int y = cy + dy;
 					if (x >= 0 && x < map->width && y >= 0 && y < map->height && map_get(map, x, y) == ' ')
 					{
-						struct point* neighbour = point_create(x, y);
+						long neighbour = point_create(x, y);
 						
-						if (!list_contains(visited, neighbour, point_equals))
+						if (!list_contains(visited, (void*) neighbour, point_equals))
 						{
 							struct list* neighbour_path = list_clone(current_path);
-							list_add(neighbour_path, neighbour);
+							list_add(neighbour_path, (void*) neighbour);
 							list_add(queue, neighbour_path);
-							list_add(visited, neighbour);
+							list_add(visited, (void*) neighbour);
 						}
 					}
 				}
 			}
 		}
+
+		list_destroy(current_path);
 	}
 
+	list_iterate(queue, list_destroy, NULL);
+	list_destroy(queue);
+	list_destroy(visited);
 	return NULL;	
 }
 
@@ -96,8 +102,8 @@ main()
 	}
 
 	struct list* shortestpath = NULL;
-	struct point* start = NULL;
-	struct point* finish = NULL;
+	long start = 0;
+	long finish = 0;
 
 	int running = 1;
 	while (running)
@@ -136,15 +142,23 @@ main()
 
 		map_set(map, sx, sy, '*');
 		
-		if (shortestpath && !list_empty(shortestpath))
+		if (shortestpath)
 		{
-			struct point* point = (struct point*) list_getfirst(shortestpath);
-			list_removefirst(shortestpath);
+			if (!list_empty(shortestpath))
+			{
+				long point = (long) list_getfirst(shortestpath);
+				list_removefirst(shortestpath);
 		
-			map_set(map, px, py, ' ');
-			px = point->x;
-			py = point->y;
-			map_set(map, px, py, 'P');
+				map_set(map, px, py, ' ');
+				px = point_getx(point);
+				py = point_gety(point);
+				map_set(map, px, py, 'P');
+			}
+			else
+			{
+				list_destroy(shortestpath);
+				shortestpath = NULL;
+			}
 		}
 		
 		map_print(map);
