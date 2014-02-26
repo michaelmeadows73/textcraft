@@ -1,8 +1,14 @@
-textcraft: textcraft.o map.o list.o point.o
-	gcc -ggdb -o textcraft textcraft.o map.o list.o point.o -lncurses
+textcraft: textcraft.o peasant.o entity.o map.o list.o point.o
+	gcc -ggdb -o textcraft textcraft.o peasant.o entity.o map.o list.o point.o -lncurses
 
 textcraft.o: textcraft.c
 	gcc -ggdb -c textcraft.c -o textcraft.o
+
+peasant.o: peasant.h peasant.c
+	gcc -ggdb -c peasant.c -o peasant.o
+
+entity.o: entity.h entity.c
+	gcc -ggdb -c entity.c -o entity.o
 
 map.o: map.h map.c
 	gcc -ggdb -c map.c -o map.o

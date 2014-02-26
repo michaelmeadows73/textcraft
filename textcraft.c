@@ -4,6 +4,8 @@
 #include "point.h"
 #include "list.h"
 #include "map.h"
+#include "entity.h"
+#include "peasant.h"
 
 struct list* map_shortestpath(map, start, finish)
 struct map* map;
@@ -87,12 +89,10 @@ main()
 	getmaxyx(stdscr, height, width);
 
 	struct map* map = map_create(width, height);
+	struct entity* peasant = peasant_create(point_create(5, 4));
 
-	int px = 5;
-	int py = 4;
 	int sx = 1;
 	int sy = 1;	
-	map_set(map, px, py, 'P');
 	map_set(map, sx, sy, '*');
 	map_set(map, 14, 12, 'T');
 
@@ -107,10 +107,6 @@ main()
 	{
 		map_set(map, x, 8, '#');
 	}
-
-	struct list* shortestpath = NULL;
-	long start = 0;
-	long finish = 0;
 
 	int running = 1;
 	while (running)
@@ -137,9 +133,7 @@ main()
 				sx++;
 				break;
 			case ' ':
-				start = point_create(px, py);
-				finish = point_create(sx - 1, sy);
-				shortestpath = map_shortestpath(map, start, finish);
+				peasant->path = map_shortestpath(map, peasant->point, point_create(sx - 1, sy));
 				break;
 			case 'q':
 			case 'Q':
@@ -148,29 +142,14 @@ main()
 		}
 
 		map_set(map, sx, sy, '*');
-		
-		if (shortestpath)
-		{
-			if (!list_empty(shortestpath))
-			{
-				long point = (long) list_getfirst(shortestpath);
-				list_removefirst(shortestpath);
-		
-				map_set(map, px, py, ' ');
-				px = point_getx(point);
-				py = point_gety(point);
-				map_set(map, px, py, 'P');
-			}
-			else
-			{
-				list_destroy(shortestpath);
-				shortestpath = NULL;
-			}
-		}
-		
+	
+		peasant->execute(peasant, map);
+	
 		map_print(map);
 		usleep(100000);
 	}
+
+	peasant_destroy(peasant);
 
 	map_destroy(map);
 
