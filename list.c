@@ -90,6 +90,23 @@ struct list* list;
 	return list->last ? list->last->data : NULL;
 }
 
+void* list_find(list, predicate, predicatestate)
+struct list* list;
+int predicate();
+void* predicatestate;
+{
+	struct link* link = list->first;
+	while (link)
+	{
+		if (predicate(link->data, predicatestate))
+		{
+			return link->data;
+		}
+		link = link->next;
+	}
+	return NULL;
+}
+
 void list_iterate(list, iterator, iteratorstate)
 struct list* list;
 void iterator();

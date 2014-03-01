@@ -65,9 +65,9 @@ struct map* map;
 		for (x = 0; x < map->width; x++)
 		{
 			char c = map_get(map, x, y);
-			attron(COLOR_PAIR(1));
-			mvprintw(y, x, "%c", c);
-			attroff(COLOR_PAIR(1));
+			attron(COLOR_PAIR(c > 0 ? 1 : 2));
+			mvprintw(y, x, "%c", c > 0 ? c : -c);
+			attroff(COLOR_PAIR(c > 0 ? 1 : 2));
 		}
 	}
 	refresh();

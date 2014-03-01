@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <ncurses.h>
 #include "point.h"
 #include "list.h"
@@ -78,62 +79,119 @@ long finish;
 	return NULL;	
 }
 
+void map_blockset(map, blockx, blocky, blockwidth, blockheight, value)
+struct map* map;
+int blockx;
+int blocky;
+int blockwidth;
+int blockheight;
+char value;
+{
+	int x, y;
+	for (y = blocky; y < blocky + blockheight; y++)
+	{
+		for (x = blockx; x < blockx + blockwidth; x++)
+		{
+			map_set(map, x, y, value);
+		}
+	}  	
+}
+
+void world_generate(map, entities)
+struct map* map;
+struct list* entities;
+{
+	srand(time(NULL));
+
+	int i;
+	for (i = 0; i < 10; i++)
+	{
+		struct entity* peasant = peasant_create(point_create(rand() % map->width, rand() % map->height));
+		list_add(entities, peasant);
+	}
+
+	int j;
+	for (j = 0; j < 20; j++)
+	{
+		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, 'T');
+		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, '#');
+	}
+}
+
+void entity_execute(entity, map)
+struct entity* entity;
+struct map* map;
+{
+	entity->execute(entity, map);
+}
+
+int entity_samepoint(entity, point)
+struct entity* entity;
+long point;
+{
+	return entity->point == point;
+}
+
 main()
 {
 	initscr();
 	start_color();
-	init_pair(1, COLOR_WHITE, COLOR_BLACK);
+	init_pair(1, COLOR_GREEN, COLOR_BLACK);
+	init_pair(2, COLOR_BLACK, COLOR_GREEN);
 
 	int width;
 	int height;
 	getmaxyx(stdscr, height, width);
 
 	struct map* map = map_create(width, height);
-	struct entity* peasant = peasant_create(point_create(5, 4));
+	struct list* entities = list_create();
 
-	int sx = 1;
-	int sy = 1;	
-	map_set(map, sx, sy, '*');
-	map_set(map, 14, 12, 'T');
+	world_generate(map, entities);
 
-	int y;
-	for (y = 3; y < 17; y++)
-	{
-		map_set(map, 10, y, '#');
-	}
+	struct entity* selected = NULL;
 
-	int x;
-	for (x = 3; x < 17; x++)
-	{
-		map_set(map, x, 8, '#');
-	}
+	int cx = 1;
+	int cy = 1;	
+	map_set(map, cx, cy, -map_get(map, cx, cy));
 
 	int running = 1;
 	while (running)
 	{
-		map_set(map, sx, sy, ' ');
+		map_set(map, cx, cy, -map_get(map, cx, cy));
 
 		timeout(1);
-		switch (getch())
+
+		char c;
+		switch (c = getch())
 		{
 			case 'w':
 			case 'W':
-				sy--;
+				cy--;
 				break;
 			case 's':
 			case 'S':
-				sy++;
+				cy++;
 				break;
 			case 'a':
 			case 'A':
-				sx--;
+				cx--;
 				break;
 			case 'd':
 			case 'D':
-				sx++;
+				cx++;
 				break;
 			case ' ':
-				peasant->path = map_shortestpath(map, peasant->point, point_create(sx - 1, sy));
+				if (selected)
+				{
+					selected->path = map_shortestpath(map, selected->point, point_create(cx, cy));
+				}
+				else
+				{
+					selected = list_find(entities, entity_samepoint, (void*) point_create(cx, cy));		
+				}
+				break;
+			case 27:
+				selected = NULL;
 				break;
 			case 'q':
 			case 'Q':
@@ -141,16 +199,23 @@ main()
 				break;
 		}
 
-		map_set(map, sx, sy, '*');
+		list_iterate(entities, entity_execute, map);	
 	
-		peasant->execute(peasant, map);
-	
+		if (selected)
+		{
+			int sx = point_getx(selected->point);
+			int sy = point_gety(selected->point);
+			map_set(map, sx, sy, -map_get(map, sx, sy)); 		
+		}	
+
+		map_set(map, cx, cy, -map_get(map, cx, cy));
+		
 		map_print(map);
 		usleep(100000);
 	}
 
-	peasant_destroy(peasant);
-
+	list_iterate(entities, peasant_destroy, NULL);
+	list_destroy(entities);
 	map_destroy(map);
 
 	endwin();

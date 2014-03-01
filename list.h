@@ -26,6 +26,8 @@ void* list_getitem(struct list*, int);
 
 void* list_getlast(struct list*);
 
+void* list_find(struct list*, int(), void*);
+
 void list_iterate(struct list*, void(), void*);
 
 struct list* list_clone(struct list*);
