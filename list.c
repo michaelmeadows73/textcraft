@@ -205,9 +205,9 @@ struct list* list;
 	}
 }
 
-void list_destroy(list)
+void list_clear(list)
 struct list* list;
-{
+{	
 	struct link* link = list->first;
 	
 	while (link)
@@ -216,6 +216,16 @@ struct list* list;
 		link_destroy(link);
 		link = next;
 	}
+
+	list->first = NULL;
+	list->last = NULL;
+	list->count = 0;
+}
+
+void list_destroy(list)
+struct list* list;
+{
+	list_clear(list);
 
 	free(list);
 }

@@ -1,3 +1,5 @@
+#include "list.h"
+
 struct map 
 {
 	int width;
@@ -16,3 +18,5 @@ char map_get(struct map*, int, int);
 void map_set(struct map*, int, int, char);
 
 void map_print(struct map*);
+
+struct list* map_shortestpath(struct map*, long, long);

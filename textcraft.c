@@ -3,81 +3,9 @@
 #include <time.h>
 #include <ncurses.h>
 #include "point.h"
-#include "list.h"
 #include "map.h"
 #include "entity.h"
 #include "peasant.h"
-
-struct list* map_shortestpath(map, start, finish)
-struct map* map;
-long start;
-long finish;
-{
-	struct list* start_path = list_create();
-	list_add(start_path, (void*) start);
-
-	struct list* queue = list_create();
-	list_add(queue, start_path);
-
-	struct list* visited = list_create();
-	list_add(visited, (void*) start);
-
-	while (!list_empty(queue))
-	{
-		struct list* current_path = list_getfirst(queue);
-		list_removefirst(queue);
-		
-		long current = (long) list_getlast(current_path);	
-		if (point_equals(current, finish))
-		{
-			list_iterate(queue, list_destroy, NULL);
-			list_destroy(queue);
-			list_destroy(visited);
-			return current_path;
-		}
-
-		int cx = point_getx(current);
-		int cy = point_gety(current);
-		
-		int pass;
-		for (pass = 0; pass <=1 ; pass++)
-		{
-			int dx, dy;
-			for (dy = -1; dy <= +1; dy++)
-			{
-				for (dx = -1; dx <= +1; dx++)
-				{
-					// first pass (0) consider non-diagonal neighbours
-					// second pass (1) consider diagonal neighbours
-					if ((!pass && ((dx && !dy) || (!dx && dy))) || (pass && dx && dy))
-					{
-						int x = cx + dx;
-						int y = cy + dy;
-						if (x >= 0 && x < map->width && y >= 0 && y < map->height && map_get(map, x, y) == ' ')
-						{
-							long neighbour = point_create(x, y);
-							
-							if (!list_contains(visited, (void*) neighbour, point_equals))
-							{
-								struct list* neighbour_path = list_clone(current_path);
-								list_add(neighbour_path, (void*) neighbour);
-								list_add(queue, neighbour_path);
-								list_add(visited, (void*) neighbour);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		list_destroy(current_path);
-	}
-
-	list_iterate(queue, list_destroy, NULL);
-	list_destroy(queue);
-	list_destroy(visited);
-	return NULL;	
-}
 
 void map_blockset(map, blockx, blocky, blockwidth, blockheight, value)
 struct map* map;
@@ -134,6 +62,10 @@ long point;
 
 main()
 {
+	int i = 0;
+	int j = 0;
+	struct entity* selectedentity = NULL;
+
 	initscr();
 	start_color();
 	init_pair(1, COLOR_GREEN, COLOR_BLACK);
@@ -148,7 +80,7 @@ main()
 
 	world_generate(map, entities);
 
-	struct entity* selected = NULL;
+	struct list* selectedentities = list_create();
 
 	int cx = 1;
 	int cy = 1;	
@@ -181,17 +113,23 @@ main()
 				cx++;
 				break;
 			case ' ':
-				if (selected)
+				selectedentity = list_find(entities, entity_samepoint, (void*) point_create(cx, cy));
+				if (selectedentity)
 				{
-					selected->path = map_shortestpath(map, selected->point, point_create(cx, cy));
-				}
-				else
+					list_add(selectedentities, selectedentity);
+				}	
+				break;
+			case 'l':
+			case 'L':
+				for (i = 0; i < list_count(selectedentities); i++)
 				{
-					selected = list_find(entities, entity_samepoint, (void*) point_create(cx, cy));		
+					long target = point_create(cx, cy);
+					selectedentity = (struct entity*) list_getitem(selectedentities, i);
+					selectedentity->target = target;
 				}
 				break;
 			case 27:
-				selected = NULL;
+				list_clear(selectedentities);
 				break;
 			case 'q':
 			case 'Q':
@@ -200,13 +138,14 @@ main()
 		}
 
 		list_iterate(entities, entity_execute, map);	
-	
-		if (selected)
+
+		for (j = 0; j < list_count(selectedentities); j++)
 		{
-			int sx = point_getx(selected->point);
-			int sy = point_gety(selected->point);
+			selectedentity = (struct entity*) list_getitem(selectedentities, j);
+			int sx = point_getx(selectedentity->point);
+			int sy = point_gety(selectedentity->point);
 			map_set(map, sx, sy, -map_get(map, sx, sy)); 		
-		}	
+		}
 
 		map_set(map, cx, cy, -map_get(map, cx, cy));
 		
@@ -215,6 +154,7 @@ main()
 	}
 
 	list_iterate(entities, peasant_destroy, NULL);
+	list_destroy(selectedentities);
 	list_destroy(entities);
 	map_destroy(map);
 
