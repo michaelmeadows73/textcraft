@@ -125,7 +125,10 @@ main()
 				{
 					long target = point_create(cx, cy);
 					selectedentity = (struct entity*) list_getitem(selectedentities, i);
-					selectedentity->target = target;
+					if (selectedentity->command == NULL)
+					{
+						selectedentity->command = move_create(target);
+					}
 				}
 				break;
 			case 27:

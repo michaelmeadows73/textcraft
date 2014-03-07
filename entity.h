@@ -3,8 +3,8 @@ typedef void (*executefn)();
 struct entity
 {
 	long point;
-	long target;
-	struct list* path;
+	struct command* command;
+	
 	executefn execute;
 };
 

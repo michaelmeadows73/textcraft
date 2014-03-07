@@ -119,16 +119,27 @@ long finish;
 					{
 						int x = cx + dx;
 						int y = cy + dy;
-						if (x >= 0 && x < map->width && y >= 0 && y < map->height && map_get(map, x, y) == ' ')
+						if (x >= 0 && x < map->width && y >= 0 && y < map->height)
 						{
 							long neighbour = point_create(x, y);
-							
-							if (!list_contains(visited, (void*) neighbour, point_equals))
+		                                        if (map_get(map, x, y) != ' ' && point_equals(neighbour, finish))
 							{
-								struct list* neighbour_path = list_clone(current_path);
-								list_add(neighbour_path, (void*) neighbour);
-								list_add(queue, neighbour_path);
-								list_add(visited, (void*) neighbour);
+								list_iterate(queue, list_destroy, NULL);
+								list_destroy(queue);
+								list_destroy(visited);
+								return current_path;
+								
+							}				
+							
+							if (map_get(map, x, y) == ' ')
+							{
+								if (!list_contains(visited, (void*) neighbour, point_equals))
+								{
+									struct list* neighbour_path = list_clone(current_path);
+									list_add(neighbour_path, (void*) neighbour);
+									list_add(queue, neighbour_path);
+									list_add(visited, (void*) neighbour);
+								}
 							}
 						}
 					}
