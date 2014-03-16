@@ -155,3 +155,62 @@ long finish;
 	list_destroy(visited);
 	return NULL;	
 }
+
+long map_find(map, item, start)
+struct map* map;
+char item;
+long start;
+{
+	int x = point_getx(start);
+	int y = point_gety(start);
+
+	if (map_get(map, x, y) == item)
+	{
+		return point_create(x, y);
+	}
+
+	int l, d, i;
+	for (l = 3; l < map->width; l += 2)
+	{	
+		x--;
+		y--;
+
+		for (d = 0; d < 4; d++)
+		{	
+			for (i = 0; i < l; i++)
+			{
+				int px;
+				int py;
+
+				switch (d)
+				{
+					case 0:
+						px = x;
+						py = y + i;
+						break;
+					case 1:
+						px = x + i;
+						py = y + l - 1;
+						break;
+					case 2:
+						px = x + l - 1;
+						py = y + l - 1 - i;
+						break;
+					case 3:
+						px = x + l - 1 - i;
+						py = y;
+						break; 		
+				}
+
+				if (px >= 0 && px < map->width && py >= 0 && py < map->height)
+				{
+					if (map_get(map, px, py) == item)
+					{
+						return point_create(px, py);
+					}
+				}
+			}
+		}
+	}
+	return -1;
+}

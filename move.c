@@ -58,6 +58,8 @@ long target;
 	struct command* command = command_create();
 	command->target = target;
 	command->path = NULL;
+	command->child = NULL;
+	command->state = 0;
 	command->execute = move_execute;
 	return command;
 }

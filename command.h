@@ -4,6 +4,8 @@ struct command
 {
 	long target;
 	struct list* path;
+	struct command* child;
+	int state;
 
 	commandfn execute;
 };

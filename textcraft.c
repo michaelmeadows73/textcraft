@@ -6,6 +6,8 @@
 #include "map.h"
 #include "entity.h"
 #include "peasant.h"
+#include "move.h"
+#include "getwood.h"
 
 void map_blockset(map, blockx, blocky, blockwidth, blockheight, value)
 struct map* map;
@@ -44,6 +46,8 @@ struct list* entities;
 		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, 'T');
 		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, '#');
 	}
+
+	map_set(map, rand() % map->width, rand() % map->height, 'C'); 
 }
 
 void entity_execute(entity, map)
@@ -94,6 +98,8 @@ main()
 		timeout(1);
 
 		char c;
+		long target;
+		char mapvalue;
 		switch (c = getch())
 		{
 			case 'w':
@@ -121,13 +127,22 @@ main()
 				break;
 			case 'l':
 			case 'L':
+				target = point_create(cx, cy);
+				mapvalue = map_get(map, cx, cy);
 				for (i = 0; i < list_count(selectedentities); i++)
 				{
-					long target = point_create(cx, cy);
 					selectedentity = (struct entity*) list_getitem(selectedentities, i);
 					if (selectedentity->command == NULL)
 					{
-						selectedentity->command = move_create(target);
+						switch (mapvalue)
+						{
+							case 'T':
+								selectedentity->command = getwood_create(target);
+								break;
+							default:
+								selectedentity->command = move_create(target);
+								break;
+						}
 					}
 				}
 				break;
