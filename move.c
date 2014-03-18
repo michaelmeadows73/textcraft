@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include "point.h"
+#include "entity.h"
 #include "map.h"
 #include "command.h"
-#include "entity.h"
 #include "move.h"
 
 int move_execute(command, entity, map)
@@ -26,7 +26,7 @@ struct map* map;
 		if (!list_empty(command->path))
 		{
 			long nextpoint = (long) list_getfirst(command->path);
-			if (map_get(map, point_getx(nextpoint), point_gety(nextpoint)) == ' ')
+			if (map_get(map, point_getx(nextpoint), point_gety(nextpoint)) == NULL)
 			{
 				// no obstacle - move
 				entity->point = nextpoint;

@@ -1,17 +1,19 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include "point.h"
+#include "list.h"
+#include "entity.h"
 #include "map.h"
 
 void map_clear(map)
 struct map* map;
 {
-	char* current = map->data;
-	char* finish = map->data + (map->width * map->height);
+ 	struct entity** current = map->entities;
+        struct entity** finish = map->entities + (map->width * map->height);
 	
 	while (current < finish)
 	{
-		*(current++) = ' ';
+		*(current++) = NULL;
 	}
 }
 
@@ -22,7 +24,7 @@ int height;
 	struct map* map = (struct map*) malloc(sizeof(struct map));
 	map->width = width;
 	map->height = height;
-	map->data = (char*) malloc(sizeof(char) * width * height);
+	map->entities = (struct entity**) malloc(sizeof(struct entity*) * width * height);
 
 	map_clear(map);
 
@@ -35,40 +37,55 @@ struct map* map;
 	free(map);
 }
 
-char map_get(map, x, y)
+struct entity* map_get(map, x, y)
 struct map* map;
 int x;
 int y;
 {
-	char* p = map->data + x + y * map->width;
+	struct entity** p = map->entities + x + y * map->width;
 	
 	return *p;
 }
 
-void map_set(map, x, y, value)
+void map_set(map, x, y, entity)
 struct map* map;
 int x;
 int y;
-char value;
+struct entity* entity;
 {
-	char* p = map->data + x + y * map->width;
+	struct entity** p = map->entities + x + y * map->width;
 
-	*p = value;
+	*p = entity;
 }
 
-void map_print(map)
+void map_print(map, cx, cy)
 struct map* map;
+int cx;
+int cy;
 {
 	int x, y;
-
 	for (y = 0; y < map->height; y++) 
 	{
 		for (x = 0; x < map->width; x++)
 		{
-			char c = map_get(map, x, y);
-			attron(COLOR_PAIR(c > 0 ? 1 : 2));
-			mvprintw(y, x, "%c", c > 0 ? c : -c);
-			attroff(COLOR_PAIR(c > 0 ? 1 : 2));
+			struct entity* entity = map_get(map, x, y);
+			int selected = 0;
+			char symbol = ' ';
+
+			if (entity)
+			{
+				selected = entity->selected;
+				symbol = entity->symbol;
+			}
+
+			if (cx == x && cy == y)
+			{
+				selected = selected ? 0 : 1;
+			}
+	
+			attron(COLOR_PAIR(selected ? 2 : 1));
+			mvprintw(y, x, "%c", symbol);
+			attroff(COLOR_PAIR(selected ? 2 : 1));
 		}
 	}
 	refresh();
@@ -122,17 +139,20 @@ long finish;
 						if (x >= 0 && x < map->width && y >= 0 && y < map->height)
 						{
 							long neighbour = point_create(x, y);
-		                                        if (map_get(map, x, y) != ' ' && point_equals(neighbour, finish))
+
+							struct entity* entity = map_get(map, x, y);
+		                                        if (map_get(map, x, y))
 							{
-								list_iterate(queue, list_destroy, NULL);
-								list_destroy(queue);
-								list_destroy(visited);
-								return current_path;
-								
-							}				
-							
-							if (map_get(map, x, y) == ' ')
-							{
+								if (point_equals(neighbour, finish))
+								{
+									list_iterate(queue, list_destroy, NULL);
+									list_destroy(queue);
+									list_destroy(visited);
+									return current_path;
+								}
+							}
+							else
+							{			
 								if (!list_contains(visited, (void*) neighbour, point_equals))
 								{
 									struct list* neighbour_path = list_clone(current_path);
@@ -156,15 +176,16 @@ long finish;
 	return NULL;	
 }
 
-long map_find(map, item, start)
+long map_find(map, type, start)
 struct map* map;
-char item;
+int type;
 long start;
 {
 	int x = point_getx(start);
 	int y = point_gety(start);
 
-	if (map_get(map, x, y) == item)
+	struct entity* entity = map_get(map, x, y);
+	if (entity && entity->type == type)
 	{
 		return point_create(x, y);
 	}
@@ -204,7 +225,8 @@ long start;
 
 				if (px >= 0 && px < map->width && py >= 0 && py < map->height)
 				{
-					if (map_get(map, px, py) == item)
+					entity = map_get(map, px, py);
+					if (entity && entity->type == type)
 					{
 						return point_create(px, py);
 					}

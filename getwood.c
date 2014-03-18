@@ -11,6 +11,7 @@ struct map* map;
 {
 	int cx, cy;
 	long treepoint, castlepoint;
+	struct entity* mapentity;
 	switch (command->state)
 	{
 		case 0:
@@ -44,7 +45,7 @@ struct map* map;
 			}
 			else
 			{
-				treepoint = map_find(map, 'T', entity->point);
+				treepoint = map_find(map, TYPE_TREE, entity->point);
 			
 				if (treepoint != -1)
 				{
@@ -60,9 +61,12 @@ struct map* map;
 		case 2:
 			cx = point_getx(command->target);
 			cy = point_gety(command->target);
-			if (map_get(map, cx, cy) == 'T')
+			mapentity = map_get(map, cx, cy);
+			if (mapentity && mapentity->type == TYPE_TREE)
 			{
-				map_set(map, cx, cy, ' ');
+				entity_destroy(mapentity);
+				
+				map_set(map, cx, cy, NULL);
 				command->state = 3;
 			}
 			else
@@ -85,7 +89,7 @@ struct map* map;
 			}
 			else
 			{
-				castlepoint = map_find(map, 'C', entity->point);
+				castlepoint = map_find(map, TYPE_CASTLE, entity->point);
 				if (castlepoint != -1)
 				{
 					// found castle - go to castle

@@ -1,9 +1,14 @@
 #include <stdlib.h>
 #include "entity.h"
 
-struct entity* entity_create()
+struct entity* entity_create(type, symbol)
+int type;
+char symbol;
 {
 	struct entity* entity = (struct entity*) malloc(sizeof(struct entity));
+	entity->type = type;
+	entity->symbol = symbol;
+	entity->selected = 0;
 	entity->point = 0;
 	entity->command = NULL;
 	entity->execute = NULL;

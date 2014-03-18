@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ncurses.h>
+#include "list.h"
 #include "point.h"
 #include "map.h"
 #include "entity.h"
@@ -9,20 +10,23 @@
 #include "move.h"
 #include "getwood.h"
 
-void map_blockset(map, blockx, blocky, blockwidth, blockheight, value)
+void map_blockset(map, blockx, blocky, blockwidth, blockheight, type, symbol)
 struct map* map;
 int blockx;
 int blocky;
 int blockwidth;
 int blockheight;
-char value;
+int type;
+char symbol;
 {
 	int x, y;
 	for (y = blocky; y < blocky + blockheight; y++)
 	{
 		for (x = blockx; x < blockx + blockwidth; x++)
 		{
-			map_set(map, x, y, value);
+			struct entity* entity = entity_create(type, symbol);
+			entity->point = point_create(x, y);
+			map_set(map, x, y, entity);
 		}
 	}  	
 }
@@ -43,11 +47,15 @@ struct list* entities;
 	int j;
 	for (j = 0; j < 20; j++)
 	{
-		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, 'T');
-		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, '#');
+		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, TYPE_TREE, SYMBOL_TREE);
+		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, TYPE_ROCK, SYMBOL_ROCK);
 	}
 
-	map_set(map, rand() % map->width, rand() % map->height, 'C'); 
+	struct entity* castle = entity_create(TYPE_CASTLE, SYMBOL_CASTLE);
+	int cx = rand() % map->width;
+	int cy = rand() % map->height;
+	castle->point = point_create(cx, cy);
+	map_set(map, rand() % map->width, rand() % map->height, castle); 
 }
 
 void entity_execute(entity, map)
@@ -68,7 +76,9 @@ main()
 {
 	int i = 0;
 	int j = 0;
-	struct entity* selectedentity = NULL;
+
+	int x = 0;
+	int y = 0;
 
 	initscr();
 	start_color();
@@ -84,22 +94,20 @@ main()
 
 	world_generate(map, entities);
 
-	struct list* selectedentities = list_create();
-
 	int cx = 1;
 	int cy = 1;	
-	map_set(map, cx, cy, -map_get(map, cx, cy));
+	//map_set(map, cx, cy, -map_get(map, cx, cy));
 
 	int running = 1;
 	while (running)
 	{
-		map_set(map, cx, cy, -map_get(map, cx, cy));
+		//map_set(map, cx, cy, -map_get(map, cx, cy));
 
 		timeout(1);
 
 		char c;
 		long target;
-		char mapvalue;
+		struct entity* mapentity;
 		switch (c = getch())
 		{
 			case 'w':
@@ -119,35 +127,52 @@ main()
 				cx++;
 				break;
 			case ' ':
-				selectedentity = list_find(entities, entity_samepoint, (void*) point_create(cx, cy));
-				if (selectedentity)
+				mapentity = map_get(map, cx, cy);
+				if (mapentity)
 				{
-					list_add(selectedentities, selectedentity);
+					mapentity->selected = 1;
 				}	
 				break;
 			case 'l':
 			case 'L':
 				target = point_create(cx, cy);
-				mapvalue = map_get(map, cx, cy);
-				for (i = 0; i < list_count(selectedentities); i++)
+				mapentity = map_get(map, cx, cy);
+				for (y = 0; y < map->height; y++)
 				{
-					selectedentity = (struct entity*) list_getitem(selectedentities, i);
-					if (selectedentity->command == NULL)
+					for (x = 0; x < map->width; x++)
 					{
-						switch (mapvalue)
+						struct entity* entity = map_get(map, x, y);
+						if (entity && entity->selected)
 						{
-							case 'T':
-								selectedentity->command = getwood_create(target);
-								break;
-							default:
-								selectedentity->command = move_create(target);
-								break;
+							if (entity->command == NULL)
+							{
+								if (mapentity && mapentity->type == TYPE_TREE)
+								{
+									entity->command = getwood_create(target);
+			
+								}
+								if (mapentity == NULL)
+								{
+									entity->command = move_create(target);
+								
+								}
+							}
 						}
 					}
 				}
 				break;
 			case 27:
-				list_clear(selectedentities);
+				for (y = 0; y < map->height; y++)
+				{
+					for (x = 0; x < map->width; x++)
+					{
+						struct entity* entity = map_get(map, x, y);
+						if (entity && entity->selected)
+						{
+							entity->selected = 0;
+						}
+					}
+				}
 				break;
 			case 'q':
 			case 'Q':
@@ -157,23 +182,14 @@ main()
 
 		list_iterate(entities, entity_execute, map);	
 
-		for (j = 0; j < list_count(selectedentities); j++)
-		{
-			selectedentity = (struct entity*) list_getitem(selectedentities, j);
-			int sx = point_getx(selectedentity->point);
-			int sy = point_gety(selectedentity->point);
-			map_set(map, sx, sy, -map_get(map, sx, sy)); 		
-		}
+		map_print(map, cx, cy);
 
-		map_set(map, cx, cy, -map_get(map, cx, cy));
-		
-		map_print(map);
 		usleep(100000);
 	}
 
 	list_iterate(entities, peasant_destroy, NULL);
-	list_destroy(selectedentities);
 	list_destroy(entities);
+	// TODO destroy all map entities properly
 	map_destroy(map);
 
 	endwin();
