@@ -98,6 +98,7 @@ main()
 	int cy = 1;	
 	//map_set(map, cx, cy, -map_get(map, cx, cy));
 
+	int clock = 0;
 	int running = 1;
 	while (running)
 	{
@@ -180,11 +181,14 @@ main()
 				break;
 		}
 
-		list_iterate(entities, entity_execute, map);	
-
+		if (clock++ % 40 == 0)
+		{
+			list_iterate(entities, entity_execute, map);	
+		}
+		
 		map_print(map, cx, cy);
 
-		usleep(100000);
+		usleep(100);
 	}
 
 	list_iterate(entities, peasant_destroy, NULL);

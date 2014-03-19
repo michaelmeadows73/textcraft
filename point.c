@@ -23,3 +23,18 @@ long point1;
 {
 	return point0 == point1;
 }
+
+long point_dist2(point0, point1)
+long point0;
+long point1;
+{
+	int x0 = point_getx(point0);
+	int y0 = point_gety(point0);
+	int x1 = point_getx(point1);
+	int y1 = point_gety(point1);
+	
+	int dx = x0 - x1;
+	int dy = y0 - y1;
+
+	return dx * dx + dy * dy;
+}

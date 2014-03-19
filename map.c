@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <limits.h>
 #include <ncurses.h>
 #include "point.h"
 #include "list.h"
@@ -157,7 +158,45 @@ long finish;
 								{
 									struct list* neighbour_path = list_clone(current_path);
 									list_add(neighbour_path, (void*) neighbour);
-									list_add(queue, neighbour_path);
+									
+									// insert neighbour_path so queue is ordered by distance to finish descending
+									long neighbour_dist = point_dist2(neighbour, finish);
+									struct link* link = queue->first;
+									while (link)
+									{
+										struct list* queue_path = link->data;
+										long queue_point = (long) list_getlast(queue_path);
+										long queue_point_dist = point_dist2(queue_point, finish);
+										if (queue_point_dist > neighbour_dist)
+										{
+											// insert neighbour path
+											struct link* newlink = (struct link*) malloc(sizeof(struct link));
+											newlink->next = link;
+											newlink->previous = link->previous;
+											newlink->data = neighbour_path;
+											if (link->previous)
+											{
+												link->previous->next = newlink;
+											}
+											if (link)
+											{
+												link->previous = newlink;
+											}
+
+											if (link == queue->first)
+											{
+												queue->first = newlink;
+											}
+											queue->count = queue->count + 1;
+											break;
+										}
+										link = link->next;
+									}
+									if (link == NULL)
+									{
+										list_add(queue, neighbour_path);
+									}
+									
 									list_add(visited, (void*) neighbour);
 								}
 							}
@@ -181,58 +220,31 @@ struct map* map;
 int type;
 long start;
 {
-	int x = point_getx(start);
-	int y = point_gety(start);
+	int x0 = point_getx(start);
+	int y0 = point_gety(start);
 
-	struct entity* entity = map_get(map, x, y);
-	if (entity && entity->type == type)
+	long mind = LONG_MAX;
+	long minpoint = -1;
+
+	int x1;
+	int y1;
+	struct entity** current = map->entities;
+	for (y1 = 0; y1 < map->height; y1++)
 	{
-		return point_create(x, y);
-	}
-
-	int l, d, i;
-	for (l = 3; l < map->width; l += 2)
-	{	
-		x--;
-		y--;
-
-		for (d = 0; d < 4; d++)
-		{	
-			for (i = 0; i < l; i++)
+		for (x1 = 0; x1 < map->width; x1++)
+		{
+			struct entity* entity = *(current++);
+			if (entity && entity->type == type)
 			{
-				int px;
-				int py;
-
-				switch (d)
+				long d = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
+				if (d < mind)
 				{
-					case 0:
-						px = x;
-						py = y + i;
-						break;
-					case 1:
-						px = x + i;
-						py = y + l - 1;
-						break;
-					case 2:
-						px = x + l - 1;
-						py = y + l - 1 - i;
-						break;
-					case 3:
-						px = x + l - 1 - i;
-						py = y;
-						break; 		
-				}
-
-				if (px >= 0 && px < map->width && py >= 0 && py < map->height)
-				{
-					entity = map_get(map, px, py);
-					if (entity && entity->type == type)
-					{
-						return point_create(px, py);
-					}
-				}
+					mind = d;
+					minpoint = point_create(x1, y1);
+				}				
 			}
 		}
 	}
-	return -1;
+
+	return minpoint;
 }
