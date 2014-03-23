@@ -20,3 +20,5 @@ void map_print(struct map*, int, int);
 struct list* map_shortestpath(struct map*, long, long);
 
 long map_find(struct map*, int, long);
+
+void map_execute(struct map*);

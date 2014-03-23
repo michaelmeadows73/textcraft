@@ -31,6 +31,7 @@ long point;
 	peasant->point = point;
 	peasant->command = NULL;
 	peasant->execute = peasant_execute;
+	peasant->destroy = peasant_destroy;
 	return peasant;
 }
 

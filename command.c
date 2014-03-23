@@ -21,5 +21,11 @@ struct command* command;
 		command->path = NULL;
 	}
 
+	if (command->child)
+	{
+		command_destroy(command->child);
+		command->child = NULL;
+	}
+	
 	free(command);
 }

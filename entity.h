@@ -9,6 +9,7 @@
 #define SYMBOL_CASTLE	'C'
 
 typedef void (*executefn)();
+typedef void (*destroyfn)();
 
 struct entity
 {
@@ -19,6 +20,7 @@ struct entity
 	struct command* command;
 	
 	executefn execute;
+	destroyfn destroy;
 };
 
 struct entity* entity_create();

@@ -12,6 +12,7 @@ char symbol;
 	entity->point = 0;
 	entity->command = NULL;
 	entity->execute = NULL;
+	entity->destroy = entity_destroy;
 	return entity;
 }
 

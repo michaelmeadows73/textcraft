@@ -64,7 +64,7 @@ struct map* map;
 			mapentity = map_get(map, cx, cy);
 			if (mapentity && mapentity->type == TYPE_TREE)
 			{
-				entity_destroy(mapentity);
+				mapentity->destroy(mapentity);
 				
 				map_set(map, cx, cy, NULL);
 				command->state = 3;

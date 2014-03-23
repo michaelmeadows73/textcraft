@@ -31,17 +31,18 @@ char symbol;
 	}  	
 }
 
-void world_generate(map, entities)
+void world_generate(map)
 struct map* map;
-struct list* entities;
 {
 	srand(time(NULL));
 
 	int i;
 	for (i = 0; i < 10; i++)
 	{
-		struct entity* peasant = peasant_create(point_create(rand() % map->width, rand() % map->height));
-		list_add(entities, peasant);
+		int px = rand() % map->width;
+		int py = rand() % map->height;
+		struct entity* peasant = peasant_create(point_create(px, py));
+		map_set(map, px, py, peasant);
 	}
 
 	int j;
@@ -90,20 +91,15 @@ main()
 	getmaxyx(stdscr, height, width);
 
 	struct map* map = map_create(width, height);
-	struct list* entities = list_create();
-
-	world_generate(map, entities);
+	world_generate(map);
 
 	int cx = 1;
 	int cy = 1;	
-	//map_set(map, cx, cy, -map_get(map, cx, cy));
 
 	int clock = 0;
 	int running = 1;
 	while (running)
 	{
-		//map_set(map, cx, cy, -map_get(map, cx, cy));
-
 		timeout(1);
 
 		char c;
@@ -183,7 +179,7 @@ main()
 
 		if (clock++ % 40 == 0)
 		{
-			list_iterate(entities, entity_execute, map);	
+			map_execute(map);
 		}
 		
 		map_print(map, cx, cy);
@@ -191,9 +187,6 @@ main()
 		usleep(100);
 	}
 
-	list_iterate(entities, peasant_destroy, NULL);
-	list_destroy(entities);
-	// TODO destroy all map entities properly
 	map_destroy(map);
 
 	endwin();

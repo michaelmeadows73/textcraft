@@ -35,6 +35,19 @@ int height;
 void map_destroy(map)
 struct map* map;
 {
+	struct entity** current = map->entities;
+	struct entity** finish = map->entities + (map->width * map->height);
+
+	while (current < finish)
+	{
+		struct entity* entity = *current;
+		if (entity)
+		{
+			entity->destroy(entity);
+		}
+		*(current++) = NULL;
+	}
+
 	free(map);
 }
 
@@ -247,4 +260,33 @@ long start;
 	}
 
 	return minpoint;
+}
+
+void map_execute_entity(entity, map)
+struct entity* entity;
+struct map* map;
+{
+	entity->execute(entity, map);
+}
+
+void map_execute(map)
+struct map* map;
+{
+	struct list* entities = list_create();
+
+	struct entity** current = map->entities;
+        struct entity** finish = map->entities + (map->width * map->height);
+	
+	while (current < finish)
+	{
+		struct entity* entity = *current;
+		if (entity && entity->execute)
+		{
+			list_add(entities, entity); 
+		}
+		current++;
+	}
+
+	list_iterate(entities, map_execute_entity, map);
+	list_destroy(entities);
 }
