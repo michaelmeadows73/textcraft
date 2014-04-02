@@ -42,6 +42,7 @@ struct map* map;
 		int px = rand() % map->width;
 		int py = rand() % map->height;
 		struct entity* peasant = peasant_create(point_create(px, py));
+		peasant->team = (rand() % 2) + 1;
 		map_set(map, px, py, peasant);
 	}
 
@@ -52,11 +53,16 @@ struct map* map;
 		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, TYPE_ROCK, SYMBOL_ROCK);
 	}
 
-	struct entity* castle = entity_create(TYPE_CASTLE, SYMBOL_CASTLE);
-	int cx = rand() % map->width;
-	int cy = rand() % map->height;
-	castle->point = point_create(cx, cy);
-	map_set(map, rand() % map->width, rand() % map->height, castle); 
+	int team;
+	for (team = 1; team <= 2; team++)
+	{
+		struct entity* castle = entity_create(TYPE_CASTLE, SYMBOL_CASTLE);
+		int cx = rand() % map->width;
+		int cy = rand() % map->height;
+		castle->team = team;
+		castle->point = point_create(cx, cy);
+		map_set(map, rand() % map->width, rand() % map->height, castle); 
+	}
 }
 
 void entity_execute(entity, map)
@@ -85,6 +91,10 @@ main()
 	start_color();
 	init_pair(1, COLOR_GREEN, COLOR_BLACK);
 	init_pair(2, COLOR_BLACK, COLOR_GREEN);
+	init_pair(3, COLOR_RED, COLOR_BLACK);
+	init_pair(4, COLOR_BLACK, COLOR_RED);
+	init_pair(5, COLOR_BLUE, COLOR_BLACK);
+	init_pair(6, COLOR_BLACK, COLOR_BLUE);
 
 	int width;
 	int height;

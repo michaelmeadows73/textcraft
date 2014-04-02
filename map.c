@@ -96,10 +96,16 @@ int cy;
 			{
 				selected = selected ? 0 : 1;
 			}
+
+			int color = (selected ? 2 : 1);
+			if (entity)
+			{
+				color += 2 * entity->team;
+			}
 	
-			attron(COLOR_PAIR(selected ? 2 : 1));
+			attron(COLOR_PAIR(color));
 			mvprintw(y, x, "%c", symbol);
-			attroff(COLOR_PAIR(selected ? 2 : 1));
+			attroff(COLOR_PAIR(color));
 		}
 	}
 	refresh();
@@ -228,9 +234,10 @@ long finish;
 	return NULL;	
 }
 
-long map_find(map, type, start)
+long map_find(map, type, team, start)
 struct map* map;
 int type;
+int team;
 long start;
 {
 	int x0 = point_getx(start);
@@ -247,7 +254,7 @@ long start;
 		for (x1 = 0; x1 < map->width; x1++)
 		{
 			struct entity* entity = *(current++);
-			if (entity && entity->type == type)
+			if (entity && entity->type == type && entity->team == team)
 			{
 				long d = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
 				if (d < mind)

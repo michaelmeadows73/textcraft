@@ -15,6 +15,7 @@ struct entity
 {
 	int type;
 	char symbol;
+	int team;
 	long point;
 	int selected;
 	struct command* command;

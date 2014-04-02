@@ -45,7 +45,7 @@ struct map* map;
 			}
 			else
 			{
-				treepoint = map_find(map, TYPE_TREE, entity->point);
+				treepoint = map_find(map, TYPE_TREE, 0, entity->point);
 			
 				if (treepoint != -1)
 				{
@@ -89,7 +89,7 @@ struct map* map;
 			}
 			else
 			{
-				castlepoint = map_find(map, TYPE_CASTLE, entity->point);
+				castlepoint = map_find(map, TYPE_CASTLE, entity->team, entity->point);
 				if (castlepoint != -1)
 				{
 					// found castle - go to castle

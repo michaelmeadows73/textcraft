@@ -8,6 +8,7 @@ char symbol;
 	struct entity* entity = (struct entity*) malloc(sizeof(struct entity));
 	entity->type = type;
 	entity->symbol = symbol;
+	entity->team = 0;
 	entity->selected = 0;
 	entity->point = 0;
 	entity->command = NULL;
