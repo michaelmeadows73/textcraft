@@ -9,6 +9,7 @@
 #include "peasant.h"
 #include "move.h"
 #include "getwood.h"
+#include "getgold.h"
 
 void map_blockset(map, blockx, blocky, blockwidth, blockheight, type, symbol)
 struct map* map;
@@ -61,7 +62,14 @@ struct map* map;
 		int cy = rand() % map->height;
 		castle->team = team;
 		castle->point = point_create(cx, cy);
-		map_set(map, rand() % map->width, rand() % map->height, castle); 
+		map_set(map, cx, cy, castle); 
+	
+		struct entity* mine = entity_create(TYPE_MINE, SYMBOL_MINE);
+		int mx = rand() % map->width;
+		int my = rand() % map->height;
+		mine->team = team;
+		mine->point = point_create(mx, my);
+		map_set(map, mx, my, mine);
 	}
 }
 
@@ -157,6 +165,10 @@ main()
 								{
 									entity->command = getwood_create(target);
 			
+								}
+								if (mapentity && mapentity->type == TYPE_MINE)
+								{
+									entity->command = getgold_create(target);
 								}
 								if (mapentity == NULL)
 								{

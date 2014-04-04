@@ -4,6 +4,7 @@
 #include "point.h"
 #include "list.h"
 #include "entity.h"
+#include "command.h"
 #include "map.h"
 
 void map_clear(map)
@@ -160,7 +161,6 @@ long finish;
 						{
 							long neighbour = point_create(x, y);
 
-							struct entity* entity = map_get(map, x, y);
 		                                        if (map_get(map, x, y))
 							{
 								if (point_equals(neighbour, finish))
