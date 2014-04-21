@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "team.h"
 #include "map.h"
 #include "entity.h"
 #include "command.h"
@@ -45,7 +46,7 @@ struct map* map;
 			}
 			else
 			{
-				treepoint = map_find(map, TYPE_TREE, 0, entity->point);
+				treepoint = map_find(map, command->collecttype, 0, command->target);
 			
 				if (treepoint != -1)
 				{
@@ -62,7 +63,7 @@ struct map* map;
 			cx = point_getx(command->target);
 			cy = point_gety(command->target);
 			mapentity = map_get(map, cx, cy);
-			if (mapentity && mapentity->type == TYPE_TREE)
+			if (mapentity && mapentity->type == command->collecttype)
 			{
 				mapentity->destroy(mapentity);
 				
@@ -79,12 +80,17 @@ struct map* map;
 			{
 				int result = command->child->execute(command->child, entity, map);
 
-				if (result)
+				if (result == 1)
 				{
 					// arrived at castle
 					move_destroy(command->child);
 					command->child = NULL;
 					command->state = 4;
+				}
+				if (result == -1)
+				{
+					// can't get to castle - cancel
+					return 1;
 				}
 			}
 			else
@@ -103,13 +109,20 @@ struct map* map;
 			}
 			break;
 		case 4:
-			// increment wood somewhere
+			// increment wood
+			command->collect(entity->team);
 
 			// get more wood
 			command->state = 0;
 			break;
 	}
 	return 0;
+}
+
+void getwood_collect(team)
+struct team* team;
+{
+	team->wood += 10;
 }
 
 struct command* getwood_create(target)
@@ -121,7 +134,34 @@ long target;
 	command->child = NULL;
 	command->state = 0;
 	command->execute = getwood_execute;
+
+	command->collecttype = TYPE_TREE;
+	command->collect = getwood_collect;
+
 	return command;
+}
+
+void getstone_collect(team)
+struct team* team;
+{
+	team->stone += 10;
+}
+
+struct command* getstone_create(target)
+long target;
+{
+	struct command* command = command_create();
+	command->target = target;
+	command->path = NULL;
+	command->child = NULL;
+	command->state = 0;
+	command->execute = getwood_execute;
+
+	command->collecttype = TYPE_ROCK;
+	command->collect = getstone_collect;
+
+	return command;
+
 }
 
 void getwood_destroy(getwood)

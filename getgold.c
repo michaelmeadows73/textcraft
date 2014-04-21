@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "team.h"
 #include "map.h"
 #include "entity.h"
 #include "command.h"
@@ -69,6 +70,7 @@ struct map* map;
 	else if (command->state == 101)
 	{
 		// drop gold
+		entity->team->gold += 10;		
 
 		// go back to mine
 		command->state = 0;

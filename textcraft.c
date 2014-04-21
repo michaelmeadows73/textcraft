@@ -4,6 +4,7 @@
 #include <ncurses.h>
 #include "list.h"
 #include "point.h"
+#include "team.h"
 #include "map.h"
 #include "entity.h"
 #include "peasant.h"
@@ -32,20 +33,12 @@ char symbol;
 	}  	
 }
 
-void world_generate(map)
+void world_generate(map, team1, team2)
 struct map* map;
+struct team* team1;
+struct team* team2;
 {
 	srand(time(NULL));
-
-	int i;
-	for (i = 0; i < 10; i++)
-	{
-		int px = rand() % map->width;
-		int py = rand() % map->height;
-		struct entity* peasant = peasant_create(point_create(px, py));
-		peasant->team = (rand() % 2) + 1;
-		map_set(map, px, py, peasant);
-	}
 
 	int j;
 	for (j = 0; j < 20; j++)
@@ -54,22 +47,35 @@ struct map* map;
 		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, TYPE_ROCK, SYMBOL_ROCK);
 	}
 
-	int team;
-	for (team = 1; team <= 2; team++)
+	int i;
+	for (i = 0; i < 10; i++)
+	{
+		int px = rand() % map->width;
+		int py = rand() % map->height;
+		struct entity* peasant = peasant_create(point_create(px, py));
+		peasant->team = i < 5 ? team1 : team2;
+		map_set(map, px, py, peasant);
+	}
+
+	int k;
+	for (k = 0; k < 5; k++)
+	{	
+		struct entity* mine = entity_create(TYPE_MINE, SYMBOL_MINE);
+		int mx = rand() % map->width;
+		int my = rand() % map->height;
+		mine->point = point_create(mx, my);
+		map_set(map, mx, my, mine);
+	}
+
+	int teamid;
+	for (teamid = 1; teamid <= 2; teamid++)
 	{
 		struct entity* castle = entity_create(TYPE_CASTLE, SYMBOL_CASTLE);
 		int cx = rand() % map->width;
 		int cy = rand() % map->height;
-		castle->team = team;
+		castle->team = teamid == 1 ? team1 : team2;
 		castle->point = point_create(cx, cy);
 		map_set(map, cx, cy, castle); 
-	
-		struct entity* mine = entity_create(TYPE_MINE, SYMBOL_MINE);
-		int mx = rand() % map->width;
-		int my = rand() % map->height;
-		mine->team = team;
-		mine->point = point_create(mx, my);
-		map_set(map, mx, my, mine);
 	}
 }
 
@@ -87,8 +93,68 @@ long point;
 	return entity->point == point;
 }
 
+void map_clearselection(map)
+struct map* map;
+{
+	int x, y;
+	for (y = 0; y < map->height; y++)
+	{
+		for (x = 0; x < map->width; x++)
+		{
+			struct entity* entity = map_get(map, x, y);
+			if (entity && entity->selected)
+			{
+				entity->selected = 0;
+			}
+		}
+	}
+}
+
+int map_select(map, cx, cy, type, team, minid)
+struct map* map;
+int cx;
+int cy;
+int type;
+struct team* team;
+int minid;
+{
+	map_clearselection(map);
+
+	struct entity* peasant = NULL;
+
+	int x, y;
+	for (y = 0; y < map->height; y++)
+	{
+		for (x = 0; x < map->width; x++)
+		{
+			struct entity* entity = map_get(map, x, y);
+			if (entity && (entity->type == type) && (entity->team == team) && (entity->id >= minid))
+			{
+				if ((peasant == NULL) || (peasant && (entity->id < peasant->id)))
+				{
+					peasant = entity;
+				}
+			}
+		}
+	}
+
+	if (peasant)
+	{
+		peasant->selected = 1;
+	}
+	
+	return peasant ? peasant->id : -1;
+}
+
 main()
 {
+	struct team* team1 = team_create(1);
+	struct team* team2 = team_create(2);
+
+	struct team* playerteam = team1;
+
+	int selectid = -1;
+
 	int i = 0;
 	int j = 0;
 
@@ -103,13 +169,14 @@ main()
 	init_pair(4, COLOR_BLACK, COLOR_RED);
 	init_pair(5, COLOR_BLUE, COLOR_BLACK);
 	init_pair(6, COLOR_BLACK, COLOR_BLUE);
-
+	curs_set(0);
+	
 	int width;
 	int height;
 	getmaxyx(stdscr, height, width);
 
 	struct map* map = map_create(width, height);
-	world_generate(map);
+	world_generate(map, team1, team2);
 
 	int cx = 1;
 	int cy = 1;	
@@ -143,7 +210,7 @@ main()
 				break;
 			case ' ':
 				mapentity = map_get(map, cx, cy);
-				if (mapentity)
+				if (mapentity && mapentity->team == playerteam)
 				{
 					mapentity->selected = 1;
 				}	
@@ -157,41 +224,42 @@ main()
 					for (x = 0; x < map->width; x++)
 					{
 						struct entity* entity = map_get(map, x, y);
-						if (entity && entity->selected)
+						if (entity && entity->selected && (entity->team == playerteam))
 						{
-							if (entity->command == NULL)
+							if (entity->command)
 							{
-								if (mapentity && mapentity->type == TYPE_TREE)
-								{
-									entity->command = getwood_create(target);
-			
-								}
-								if (mapentity && mapentity->type == TYPE_MINE)
-								{
-									entity->command = getgold_create(target);
-								}
-								if (mapentity == NULL)
-								{
-									entity->command = move_create(target);
-								
-								}
+								// TODO: call appropriate destroy command
+								command_destroy(entity->command);
+								entity->command = NULL;	
+							}
+	
+							if (mapentity && mapentity->type == TYPE_TREE)
+							{
+								entity->command = getwood_create(target);
+							}
+							if (mapentity && mapentity->type == TYPE_ROCK)
+							{
+								entity->command = getstone_create(target);
+							}
+							if (mapentity && mapentity->type == TYPE_MINE)
+							{
+								entity->command = getgold_create(target);
+							}
+							if (mapentity == NULL)
+							{
+								entity->command = move_create(target);
+							
 							}
 						}
 					}
 				}
 				break;
 			case 27:
-				for (y = 0; y < map->height; y++)
-				{
-					for (x = 0; x < map->width; x++)
-					{
-						struct entity* entity = map_get(map, x, y);
-						if (entity && entity->selected)
-						{
-							entity->selected = 0;
-						}
-					}
-				}
+				map_clearselection(map);
+				break;
+			case 'p':
+			case 'P':
+				selectid = map_select(map, cx, cy, TYPE_PEASANT, playerteam, selectid + 1);
 				break;
 			case 'q':
 			case 'Q':
@@ -206,6 +274,10 @@ main()
 		
 		map_print(map, cx, cy);
 
+		team_print(playerteam);
+
+		refresh();
+		
 		usleep(100);
 	}
 

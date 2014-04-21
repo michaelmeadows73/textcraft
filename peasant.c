@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "point.h"
+#include "team.h"
 #include "map.h"
 #include "command.h"
 #include "entity.h"

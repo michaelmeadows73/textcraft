@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "team.h"
 #include "command.h"
 
 struct command* command_create()
@@ -9,6 +10,9 @@ struct command* command_create()
 	command->child = NULL;
 	command->state = 0;
 	command->execute = NULL;
+	
+	command->collecttype = 0;
+	command->collect = NULL;
 	return command;
 }
 

@@ -5,6 +5,7 @@
 #include "list.h"
 #include "entity.h"
 #include "command.h"
+#include "team.h"
 #include "map.h"
 
 void map_clear(map)
@@ -99,9 +100,9 @@ int cy;
 			}
 
 			int color = (selected ? 2 : 1);
-			if (entity)
+			if (entity && entity->team)
 			{
-				color += 2 * entity->team;
+				color += 2 * entity->team->id;
 			}
 	
 			attron(COLOR_PAIR(color));
@@ -109,7 +110,6 @@ int cy;
 			attroff(COLOR_PAIR(color));
 		}
 	}
-	refresh();
 }
 
 struct list* map_shortestpath(map, start, finish)
@@ -177,45 +177,7 @@ long finish;
 								{
 									struct list* neighbour_path = list_clone(current_path);
 									list_add(neighbour_path, (void*) neighbour);
-									
-									// insert neighbour_path so queue is ordered by distance to finish descending
-									long neighbour_dist = point_dist2(neighbour, finish);
-									struct link* link = queue->first;
-									while (link)
-									{
-										struct list* queue_path = link->data;
-										long queue_point = (long) list_getlast(queue_path);
-										long queue_point_dist = point_dist2(queue_point, finish);
-										if (queue_point_dist > neighbour_dist)
-										{
-											// insert neighbour path
-											struct link* newlink = (struct link*) malloc(sizeof(struct link));
-											newlink->next = link;
-											newlink->previous = link->previous;
-											newlink->data = neighbour_path;
-											if (link->previous)
-											{
-												link->previous->next = newlink;
-											}
-											if (link)
-											{
-												link->previous = newlink;
-											}
-
-											if (link == queue->first)
-											{
-												queue->first = newlink;
-											}
-											queue->count = queue->count + 1;
-											break;
-										}
-										link = link->next;
-									}
-									if (link == NULL)
-									{
-										list_add(queue, neighbour_path);
-									}
-									
+									list_add(queue, neighbour_path);
 									list_add(visited, (void*) neighbour);
 								}
 							}
@@ -237,7 +199,7 @@ long finish;
 long map_find(map, type, team, start)
 struct map* map;
 int type;
-int team;
+struct team* team;
 long start;
 {
 	int x0 = point_getx(start);

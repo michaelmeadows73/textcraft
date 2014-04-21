@@ -15,9 +15,10 @@ typedef void (*destroyfn)();
 
 struct entity
 {
+	int id;
 	int type;
 	char symbol;
-	int team;
+	struct team* team;
 	long point;
 	int selected;
 	struct command* command;

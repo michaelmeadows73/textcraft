@@ -1,14 +1,17 @@
 #include <stdlib.h>
 #include "entity.h"
 
+int nextid = 0;
+
 struct entity* entity_create(type, symbol)
 int type;
 char symbol;
 {
 	struct entity* entity = (struct entity*) malloc(sizeof(struct entity));
+	entity->id = nextid++;
 	entity->type = type;
 	entity->symbol = symbol;
-	entity->team = 0;
+	entity->team = NULL;
 	entity->selected = 0;
 	entity->point = 0;
 	entity->command = NULL;

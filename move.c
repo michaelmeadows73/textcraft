@@ -17,7 +17,7 @@ struct map* map;
 		{
 			// can't get to target
 			command->target = -1;
-			return 1;
+			return -1;
 		}
 	}
 

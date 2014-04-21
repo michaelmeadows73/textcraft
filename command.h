@@ -1,4 +1,5 @@
 typedef int (*commandfn)();
+typedef void (*collectfn)(struct team*);
 
 struct command
 {
@@ -8,6 +9,9 @@ struct command
 	int state;
 
 	commandfn execute;
+
+	int collecttype;
+	collectfn collect;
 };
 
 struct command* command_create();
