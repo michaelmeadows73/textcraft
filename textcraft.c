@@ -146,12 +146,75 @@ int minid;
 	return peasant ? peasant->id : -1;
 }
 
+struct entity* ai_idlepeasant(map, team)
+struct map* map;
+struct team* team;
+{
+	int x, y;
+	for (y = 0; y < map->height; y++)
+	{
+		for (x = 0; x < map->width; x++)
+		{
+			struct entity* entity = map_get(map, x, y);
+			if (entity && entity->type == TYPE_PEASANT && entity->team == team && entity->command == NULL)
+			{
+				return entity;
+			}		
+		}
+	}
+	return NULL;
+}
+
+int ai_randomresourcetype()
+{
+	int random = rand() % 3;
+	int type;
+	switch (random)
+	{
+		case 0:
+			return TYPE_TREE;
+		case 1:
+			return TYPE_ROCK;
+		case 2:
+			return TYPE_MINE;
+	}
+}
+
+void ai(map, team)
+struct map* map;
+struct team* team;
+{
+	struct entity* idlepeasant = ai_idlepeasant(map, team);
+	if (idlepeasant != NULL)
+	{
+		int resourcetype = ai_randomresourcetype();
+		
+		long resourcepoint = map_find(map, resourcetype, NULL, idlepeasant->point);
+		if (resourcepoint > -1)
+		{
+			switch (resourcetype)
+			{
+				case TYPE_TREE:
+					idlepeasant->command = getwood_create(resourcepoint);
+					break;
+				case TYPE_ROCK:
+					idlepeasant->command = getstone_create(resourcepoint);
+					break;
+				case TYPE_MINE:
+					idlepeasant->command = getgold_create(resourcepoint);
+					break;
+			}
+		}
+	}
+}
+
 main()
 {
 	struct team* team1 = team_create(1);
 	struct team* team2 = team_create(2);
 
 	struct team* playerteam = team1;
+	struct team* computerteam = team2;
 
 	int selectid = -1;
 
@@ -267,10 +330,17 @@ main()
 				break;
 		}
 
-		if (clock++ % 40 == 0)
+		if (clock % 1600 == 0)
+		{
+			ai(map, computerteam);
+		}
+
+		if (clock % 40 == 0)
 		{
 			map_execute(map);
 		}
+
+		clock++;
 		
 		map_print(map, cx, cy);
 
