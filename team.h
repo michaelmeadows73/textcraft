@@ -4,6 +4,7 @@ struct team
 	int gold;
 	int wood;
 	int stone;
+	struct team* enemy;
 };
 
 struct team* team_create(int);

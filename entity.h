@@ -20,6 +20,7 @@ struct entity
 	char symbol;
 	struct team* team;
 	long point;
+	int health;
 	int selected;
 	struct command* command;
 	

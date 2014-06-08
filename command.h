@@ -4,6 +4,7 @@ typedef void (*collectfn)(struct team*);
 struct command
 {
 	long target;
+	struct entity* targetentity;
 	struct list* path;
 	struct command* child;
 	int state;

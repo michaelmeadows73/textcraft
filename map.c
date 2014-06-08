@@ -236,6 +236,12 @@ struct entity* entity;
 struct map* map;
 {
 	entity->execute(entity, map);
+
+	if (entity->health <= 0)
+	{
+		map_set(map, point_getx(entity->point), point_gety(entity->point), NULL);
+		entity->destroy(entity);
+	}
 }
 
 void map_execute(map)

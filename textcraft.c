@@ -11,6 +11,7 @@
 #include "move.h"
 #include "getwood.h"
 #include "getgold.h"
+#include "attack.h"
 
 void map_blockset(map, blockx, blocky, blockwidth, blockheight, type, symbol)
 struct map* map;
@@ -213,6 +214,9 @@ main()
 	struct team* team1 = team_create(1);
 	struct team* team2 = team_create(2);
 
+	team1->enemy = team2;
+	team2->enemy = team1;
+
 	struct team* playerteam = team1;
 	struct team* computerteam = team2;
 
@@ -280,6 +284,8 @@ main()
 				break;
 			case 'l':
 			case 'L':
+			case 'k':
+			case 'K':
 				target = point_create(cx, cy);
 				mapentity = map_get(map, cx, cy);
 				for (y = 0; y < map->height; y++)
@@ -295,23 +301,29 @@ main()
 								command_destroy(entity->command);
 								entity->command = NULL;	
 							}
-	
-							if (mapentity && mapentity->type == TYPE_TREE)
+							if (c == 'l' || c == 'L')
 							{
-								entity->command = getwood_create(target);
+								if (mapentity && mapentity->type == TYPE_TREE)
+								{
+									entity->command = getwood_create(target);
+								}
+								if (mapentity && mapentity->type == TYPE_ROCK)
+								{
+									entity->command = getstone_create(target);
+								}
+								if (mapentity && mapentity->type == TYPE_MINE)
+								{
+									entity->command = getgold_create(target);
+								}
+								if (mapentity == NULL)
+								{
+									entity->command = move_create(target);
+								
+								}
 							}
-							if (mapentity && mapentity->type == TYPE_ROCK)
+							else
 							{
-								entity->command = getstone_create(target);
-							}
-							if (mapentity && mapentity->type == TYPE_MINE)
-							{
-								entity->command = getgold_create(target);
-							}
-							if (mapentity == NULL)
-							{
-								entity->command = move_create(target);
-							
+								entity->command = attack_create(target);
 							}
 						}
 					}

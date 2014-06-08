@@ -14,6 +14,7 @@ char symbol;
 	entity->team = NULL;
 	entity->selected = 0;
 	entity->point = 0;
+	entity->health = 0;
 	entity->command = NULL;
 	entity->execute = NULL;
 	entity->destroy = entity_destroy;
