@@ -17,7 +17,6 @@ char symbol;
 	entity->health = 0;
 	entity->command = NULL;
 	entity->execute = NULL;
-	entity->destroy = entity_destroy;
 	return entity;
 }
 

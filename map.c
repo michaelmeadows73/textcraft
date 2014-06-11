@@ -45,7 +45,7 @@ struct map* map;
 		struct entity* entity = *current;
 		if (entity)
 		{
-			entity->destroy(entity);
+			entity_destroy(entity);
 		}
 		*(current++) = NULL;
 	}
@@ -240,7 +240,7 @@ struct map* map;
 	if (entity->health <= 0)
 	{
 		map_set(map, point_getx(entity->point), point_gety(entity->point), NULL);
-		entity->destroy(entity);
+		entity_destroy(entity);
 	}
 }
 

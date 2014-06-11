@@ -22,7 +22,7 @@ struct map* map;
 			
 			if (result)
 			{
-				move_destroy(command->child);
+				command_destroy(command->child);
 				command->child = NULL;
 				command->state = 1;
 			}
@@ -47,7 +47,7 @@ struct map* map;
 			if (result)
 			{
 				// arrived at castle
-				move_destroy(command->child);
+				command_destroy(command->child);
 				command->child = NULL;
 				command->state = 101;
 			}
@@ -89,10 +89,4 @@ long target;
 	command->state = 0;
 	command->execute = getgold_execute;
 	return command;
-}
-
-void getgold_destroy(getgold)
-struct command* getgold;
-{
-	command_destroy(getgold);
 }

@@ -93,9 +93,3 @@ long target;
 
 	return command;
 }
-
-void attack_destroy(attack)
-struct command* attack;
-{
-	command_destroy(attack);
-}

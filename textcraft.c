@@ -297,7 +297,6 @@ main()
 						{
 							if (entity->command)
 							{
-								// TODO: call appropriate destroy command
 								command_destroy(entity->command);
 								entity->command = NULL;	
 							}

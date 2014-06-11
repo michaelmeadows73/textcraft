@@ -33,12 +33,5 @@ long point;
 	peasant->health = 10;
 	peasant->command = NULL;
 	peasant->execute = peasant_execute;
-	peasant->destroy = peasant_destroy;
 	return peasant;
-}
-
-void peasant_destroy(peasant)
-struct entity* peasant;
-{
-	entity_destroy(peasant);
 }

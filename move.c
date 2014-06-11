@@ -63,9 +63,3 @@ long target;
 	command->execute = move_execute;
 	return command;
 }
-
-void move_destroy(move)
-struct command* move;
-{
-	command_destroy(move);
-} 

@@ -14,7 +14,6 @@
 #define SYMBOL_MINE	'M'
 
 typedef void (*executefn)();
-typedef void (*destroyfn)();
 
 struct entity
 {
@@ -28,7 +27,6 @@ struct entity
 	struct command* command;
 	
 	executefn execute;
-	destroyfn destroy;
 };
 
 struct entity* entity_create();

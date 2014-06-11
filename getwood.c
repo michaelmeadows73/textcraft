@@ -22,7 +22,7 @@ struct map* map;
 				
 				if (result)
 				{
-					move_destroy(command->child);
+					command_destroy(command->child);
 					command->child = NULL;
 					command->state = 1;
 				}
@@ -39,7 +39,7 @@ struct map* map;
 			
 				if (result)
 				{
-					move_destroy(command->child);
+					command_destroy(command->child);
 					command->child = NULL;
 					command->state = 2;
 				}
@@ -65,7 +65,7 @@ struct map* map;
 			mapentity = map_get(map, cx, cy);
 			if (mapentity && mapentity->type == command->collecttype)
 			{
-				mapentity->destroy(mapentity);
+				entity_destroy(mapentity);
 				
 				map_set(map, cx, cy, NULL);
 				command->state = 3;
@@ -83,7 +83,7 @@ struct map* map;
 				if (result == 1)
 				{
 					// arrived at castle
-					move_destroy(command->child);
+					command_destroy(command->child);
 					command->child = NULL;
 					command->state = 4;
 				}
@@ -162,10 +162,4 @@ long target;
 
 	return command;
 
-}
-
-void getwood_destroy(getwood)
-struct command* getwood;
-{
-	command_destroy(getwood);
 }
