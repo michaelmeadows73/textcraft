@@ -1,3 +1,6 @@
+#ifndef ENTITY_H
+#define ENTITY_H
+
 #define TYPE_ROCK    	0
 #define TYPE_TREE    	1
 #define TYPE_PEASANT	2
@@ -31,3 +34,5 @@ struct entity
 struct entity* entity_create();
 
 void entity_destroy(struct entity*);
+
+#endif

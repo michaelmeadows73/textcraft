@@ -1,3 +1,6 @@
+#ifndef LIST_H
+#define LIST_H
+
 struct link
 {
 	struct link* next;
@@ -41,3 +44,5 @@ void list_removelast(struct list*);
 void list_clear(struct list*);
 
 void list_destroy(struct list*);
+
+#endif

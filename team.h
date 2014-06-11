@@ -1,3 +1,6 @@
+#ifndef TEAM_H
+#define TEAM_H
+
 struct team
 {
 	int id;
@@ -12,3 +15,5 @@ struct team* team_create(int);
 void team_print(struct team*);
 
 void team_destroy(struct team*);
+
+#endif

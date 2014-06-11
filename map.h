@@ -1,3 +1,6 @@
+#ifndef MAP_H
+#define MAP_H
+
 struct map 
 {
 	int width;
@@ -22,3 +25,5 @@ struct list* map_shortestpath(struct map*, long, long);
 long map_find(struct map*, int, struct team*, long);
 
 void map_execute(struct map*);
+
+#endif

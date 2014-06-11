@@ -1,3 +1,6 @@
+#ifndef COMMAND_H
+#define COMMAND_H
+
 typedef int (*commandfn)();
 typedef void (*collectfn)(struct team*);
 
@@ -18,3 +21,5 @@ struct command
 struct command* command_create();
 
 void command_destroy(struct command*);
+
+#endif
