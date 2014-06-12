@@ -30,7 +30,7 @@ long point;
 {
 	struct entity* peasant = entity_create(TYPE_PEASANT, SYMBOL_PEASANT);
 	peasant->point = point;
-	peasant->health = 10;
+	peasant->health = 100;
 	peasant->command = NULL;
 	peasant->execute = peasant_execute;
 	return peasant;
