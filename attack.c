@@ -5,6 +5,7 @@
 #include "entity.h"
 #include "command.h"
 #include "move.h"
+#include "flee.h"
 
 struct command* attack_create(long);
 
@@ -42,17 +43,34 @@ struct map* map;
 
 				if (command->targetentity->health > 0)
 				{
-					// if target entity is doing something other than attacking - stop
-					if (command->targetentity->command && command->targetentity->command->execute != attack_execute) {
+					
+					// if target entity is doing something other than fleeing and has low health - stop
+					if (command->targetentity->command && command->targetentity->command->execute != flee_execute && command->targetentity->health <= 33)
+					{
 						command_destroy(command->targetentity->command);
 						command->targetentity->command = NULL;
 					}
 
-					// if target entity is doing nothing - attack
+					// if target entity is doing something other than attacking and has high health - stop
+					if (command->targetentity->command && command->targetentity->command->execute != attack_execute && command->targetentity->health > 33) {
+						command_destroy(command->targetentity->command);
+						command->targetentity->command = NULL;
+					}
+
+					// if target entity has stopped
 					if (command->targetentity->command == NULL)
 					{
-						command->targetentity->command = attack_create(entity->point);
-					} 
+						if (command->targetentity->health > 33)
+						{
+							// high health - attack
+							command->targetentity->command = attack_create(entity->point);
+						}
+						else
+						{
+							// low health - flee
+							command->targetentity->command = flee_create();
+						}
+					}
 				}
 				else
 				{

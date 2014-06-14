@@ -1,6 +1,10 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include "list.h"
+#include "entity.h"
+#include "team.h"
+
 typedef int (*commandfn)();
 typedef void (*collectfn)(struct team*);
 

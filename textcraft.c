@@ -11,6 +11,7 @@
 #include "move.h"
 #include "getwood.h"
 #include "getgold.h"
+#include "flee.h"
 #include "attack.h"
 
 void map_blockset(map, blockx, blocky, blockwidth, blockheight, type, symbol)
