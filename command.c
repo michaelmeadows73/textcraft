@@ -2,17 +2,23 @@
 #include "team.h"
 #include "command.h"
 
-struct command* command_create()
+void command_init(command)
+struct command* command;
 {
-	struct command* command = (struct command*) malloc(sizeof(struct command));
 	command->target = 0;
 	command->targetentity = NULL;	
 	command->path = NULL;
 	command->child = NULL;
 	command->state = 0;
 	command->execute = NULL;
-	command->collecttype = 0;
-	command->collect = NULL;
+}
+
+struct command* command_create()
+{
+	struct command* command = (struct command*) malloc(sizeof(struct command));
+	
+	command_init(command);
+
 	return command;
 }
 

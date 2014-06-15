@@ -1,5 +1,4 @@
 #include "team.h"
-#include "command.h"
 #include "gather.h"
 
 void getgold_collect(team)
@@ -8,7 +7,7 @@ struct team* team;
 	team->gold += 10;
 }
 
-struct command* getgold_create(target)
+struct gather* getgold_create(target)
 long target;
 {
 	

@@ -198,13 +198,13 @@ struct team* team;
 			switch (resourcetype)
 			{
 				case TYPE_TREE:
-					idlepeasant->command = getwood_create(resourcepoint);
+					idlepeasant->command = (struct command*) getwood_create(resourcepoint);
 					break;
 				case TYPE_ROCK:
-					idlepeasant->command = getstone_create(resourcepoint);
+					idlepeasant->command = (struct command*) getstone_create(resourcepoint);
 					break;
 				case TYPE_MINE:
-					idlepeasant->command = getgold_create(resourcepoint);
+					idlepeasant->command = (struct command*) getgold_create(resourcepoint);
 					break;
 			}
 		}
@@ -306,15 +306,15 @@ main()
 							{
 								if (mapentity && mapentity->type == TYPE_TREE)
 								{
-									entity->command = getwood_create(target);
+									entity->command = (struct command*) getwood_create(target);
 								}
 								if (mapentity && mapentity->type == TYPE_ROCK)
 								{
-									entity->command = getstone_create(target);
+									entity->command = (struct command*) getstone_create(target);
 								}
 								if (mapentity && mapentity->type == TYPE_MINE)
 								{
-									entity->command = getgold_create(target);
+									entity->command = (struct command*) getgold_create(target);
 								}
 								if (mapentity == NULL)
 								{

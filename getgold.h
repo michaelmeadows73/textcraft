@@ -1,8 +1,8 @@
 #ifndef GETGOLD_H
 #define GETGOLD_H
 
-#include "command.h"
+#include "gather.h"
 
-struct command* getgold_create(long);
+struct gather* getgold_create(long);
 
 #endif

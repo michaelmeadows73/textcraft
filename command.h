@@ -6,7 +6,6 @@
 #include "team.h"
 
 typedef int (*commandfn)();
-typedef void (*collectfn)(struct team*);
 
 struct command
 {
@@ -17,11 +16,9 @@ struct command
 	int state;
 
 	commandfn execute;
-
-	int collecttype;
-	int collectremove;
-	collectfn collect;
 };
+
+void command_init(struct command*);
 
 struct command* command_create();
 

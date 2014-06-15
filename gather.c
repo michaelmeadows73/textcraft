@@ -3,6 +3,7 @@
 #include "map.h"
 #include "entity.h"
 #include "command.h"
+#include "gather.h"
 #include "move.h"
 
 int gather_execute(command, entity, map)
@@ -10,6 +11,8 @@ struct command* command;
 struct entity* entity;
 struct map* map;
 {
+	struct gather* gather = (struct gather*) command;
+
 	int cx, cy;
 	long treepoint, castlepoint;
 	struct entity* mapentity;
@@ -46,7 +49,7 @@ struct map* map;
 			}
 			else
 			{
-				treepoint = map_find(map, command->collecttype, 0, command->target);
+				treepoint = map_find(map, gather->collecttype, 0, command->target);
 			
 				if (treepoint != -1)
 				{
@@ -63,9 +66,9 @@ struct map* map;
 			cx = point_getx(command->target);
 			cy = point_gety(command->target);
 			mapentity = map_get(map, cx, cy);
-			if (mapentity && mapentity->type == command->collecttype)
+			if (mapentity && mapentity->type == gather->collecttype)
 			{
-				if (command->collectremove)
+				if (gather->collectremove)
 				{
 					entity_destroy(mapentity);
 					map_set(map, cx, cy, NULL);
@@ -112,7 +115,7 @@ struct map* map;
 			break;
 		case 4:
 			// collect resource
-			command->collect(entity->team);
+			gather->collect(entity->team);
 
 			// get more resource
 			command->state = 0;
@@ -121,22 +124,21 @@ struct map* map;
 	return 0;
 }
 
-struct command* gather_create(target, collecttype, collectremove, collect)
+struct gather* gather_create(target, collecttype, collectremove, collect)
 long target;
 int collecttype;
 int collectremove;
 collectfn collect;
 {
-	struct command* command = command_create();
+	struct gather* gather = (struct gather*) malloc(sizeof(struct gather));
+	struct command* command = (struct command*) gather;
+
+	command_init(command);
 	command->target = target;
-	command->path = NULL;
-	command->child = NULL;
-	command->state = 0;
 	command->execute = gather_execute;
 
-	command->collecttype = collecttype;
-	command->collectremove = collectremove;	
-	command->collect = collect;
-
-	return command;
+	gather->collecttype = collecttype;
+	gather->collectremove = collectremove;	
+	gather->collect = collect;
+	return gather;
 }

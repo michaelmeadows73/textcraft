@@ -1,8 +1,8 @@
 #ifndef GETSTONE_H
 #define GETSTONE_H
 
-#include "command.h"
+#include "gather.h"
 
-struct command* getstone_create(long);
+struct gather* getstone_create(long);
 
 #endif
