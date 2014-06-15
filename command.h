@@ -19,6 +19,7 @@ struct command
 	commandfn execute;
 
 	int collecttype;
+	int collectremove;
 	collectfn collect;
 };
 

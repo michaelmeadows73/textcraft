@@ -1,5 +1,5 @@
-textcraft: textcraft.o attack.o flee.o peasant.o getgold.o getwood.o move.o command.o entity.o map.o team.o list.o point.o
-	gcc -ggdb -o textcraft textcraft.o attack.o flee.o peasant.o getgold.o getwood.o move.o command.o entity.o map.o team.o list.o point.o -lncurses
+textcraft: textcraft.o attack.o flee.o peasant.o getgold.o getstone.o getwood.o gather.o move.o command.o entity.o map.o team.o list.o point.o
+	gcc -ggdb -o textcraft textcraft.o attack.o flee.o peasant.o getgold.o getstone.o getwood.o gather.o move.o command.o entity.o map.o team.o list.o point.o -lncurses
 
 textcraft.o: textcraft.c
 	gcc -ggdb -c textcraft.c -o textcraft.o
@@ -16,8 +16,14 @@ peasant.o: peasant.h peasant.c
 getgold.o: getgold.h getgold.c
 	gcc -ggdb -c getgold.c -o getgold.o
 
+getstone.o: getstone.h getstone.c
+	gcc -ggdb -c getstone.c -o getstone.o
+
 getwood.o: getwood.h getwood.c
 	gcc -ggdb -c getwood.c -o getwood.o
+
+gather.o: gather.h gather.c
+	gcc -ggdb -c gather.c -o gather.o
 
 move.o: move.h move.c
 	gcc -ggdb -c move.c -o move.o

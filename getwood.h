@@ -1,8 +1,8 @@
 #ifndef GETWOOD_H
 #define GETWOOD_H
 
-struct command* getwood_create(long);
+#include "command.h"
 
-struct command* getstone_create(long);
+struct command* getwood_create(long);
 
 #endif
