@@ -17,6 +17,7 @@ char symbol;
 	entity->health = 0;
 	entity->command = NULL;
 	entity->execute = NULL;
+	entity->tostring = NULL;
 	return entity;
 }
 

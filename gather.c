@@ -124,11 +124,12 @@ struct map* map;
 	return 0;
 }
 
-struct gather* gather_create(target, collecttype, collectremove, collect)
+struct gather* gather_create(target, collecttype, collectremove, collect, desc)
 long target;
 int collecttype;
 int collectremove;
 collectfn collect;
+char* desc;
 {
 	struct gather* gather = (struct gather*) malloc(sizeof(struct gather));
 	struct command* command = (struct command*) gather;
@@ -136,6 +137,7 @@ collectfn collect;
 	command_init(command);
 	command->target = target;
 	command->execute = gather_execute;
+	command->desc = desc;
 
 	gather->collecttype = collecttype;
 	gather->collectremove = collectremove;	

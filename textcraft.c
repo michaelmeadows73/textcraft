@@ -259,6 +259,22 @@ main()
 		char c;
 		long target;
 		struct entity* mapentity;
+		
+		// get selected entities
+		struct list* selection = list_create();
+		for (y = 0; y < map->height; y++)
+		{
+			for (x = 0; x < map->width; x++)
+			{
+				struct entity* entity = map_get(map, x, y);
+				if (entity && entity->selected && (entity->team == playerteam))
+				{
+					list_add(selection, entity);
+				}
+			}
+		}
+	
+
 		switch (c = getch())
 		{
 			case 'w':
@@ -358,6 +374,20 @@ main()
 		map_print(map, cx, cy);
 
 		team_print(playerteam);
+
+		// print selected entity
+		if (list_count(selection) == 1)
+		{
+			struct entity* selected = list_getfirst(selection);
+			if (selected->tostring)
+			{
+				char str[255];
+				selected->tostring(selected, str);
+				mvprintw(height - 1, 0, "%s", str);
+			}
+		}
+
+		list_destroy(selection);
 
 		refresh();
 		

@@ -1,5 +1,4 @@
 #include <stdlib.h>
-
 #include "command.h"
 #include "move.h"
 #include "entity.h"
@@ -62,5 +61,6 @@ struct command* flee_create()
 	command->child = NULL;
 	command->state = 0;
 	command->execute = flee_execute;
+	command->desc = "Fleeing";
 	return command;
 }

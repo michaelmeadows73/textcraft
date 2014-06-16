@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdlib.h>
 #include "team.h"
 #include "map.h"
@@ -126,6 +125,6 @@ long target;
 	command->child = NULL;
 	command->state = 0;
 	command->execute = attack_execute;
-
+	command->desc = "Attacking";
 	return command;
 }

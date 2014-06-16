@@ -13,7 +13,8 @@
 #define SYMBOL_CASTLE	'C'
 #define SYMBOL_MINE	'M'
 
-typedef void (*executefn)();
+typedef void (*executefn)();  // struct entity*, struct map*
+typedef void (*tostringfn)(); // struct entity*, char*
 
 struct entity
 {
@@ -27,6 +28,7 @@ struct entity
 	struct command* command;
 	
 	executefn execute;
+	tostringfn tostring;
 };
 
 struct entity* entity_create();

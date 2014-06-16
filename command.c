@@ -11,6 +11,7 @@ struct command* command;
 	command->child = NULL;
 	command->state = 0;
 	command->execute = NULL;
+	command->desc = NULL;
 }
 
 struct command* command_create()

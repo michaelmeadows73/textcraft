@@ -15,6 +15,6 @@ struct gather
 	collectfn collect;
 };
 
-struct gather* gather_create(long, int, int, collectfn);
+struct gather* gather_create(long, int, int, collectfn, char*);
 
 #endif

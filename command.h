@@ -16,6 +16,7 @@ struct command
 	int state;
 
 	commandfn execute;
+	char* desc;
 };
 
 void command_init(struct command*);

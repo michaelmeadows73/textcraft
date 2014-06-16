@@ -10,5 +10,5 @@ struct team* team;
 struct gather* getstone_create(target)
 long target;
 {
-	return gather_create(target, TYPE_ROCK, 1, getstone_collect);
+	return gather_create(target, TYPE_ROCK, 1, getstone_collect, "Quarrying Stone");
 }

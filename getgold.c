@@ -11,5 +11,5 @@ struct gather* getgold_create(target)
 long target;
 {
 	
-	return gather_create(target, TYPE_MINE, 0, getgold_collect);
+	return gather_create(target, TYPE_MINE, 0, getgold_collect, "Mining Gold");
 }

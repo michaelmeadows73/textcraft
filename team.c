@@ -15,7 +15,7 @@ int id;
 void team_print(team)
 struct team* team;
 {
-	mvprintw(0, 0, "Gold: %d    Wood: %d    Stone: %d", team->gold, team->wood, team->stone);
+	mvprintw(0, 0, "Gold: %d    Wood: %d    Stone: %d    ", team->gold, team->wood, team->stone);
 }
 
 void team_destroy(team)
