@@ -8,12 +8,14 @@
 #include "map.h"
 #include "entity.h"
 #include "peasant.h"
+#include "castle.h"
 #include "move.h"
 #include "getwood.h"
 #include "getstone.h"
 #include "getgold.h"
 #include "flee.h"
 #include "attack.h"
+#include "train.h"
 
 void map_blockset(map, blockx, blocky, blockwidth, blockheight, type, symbol)
 struct map* map;
@@ -73,11 +75,11 @@ struct team* team2;
 	int teamid;
 	for (teamid = 1; teamid <= 2; teamid++)
 	{
-		struct entity* castle = entity_create(TYPE_CASTLE, SYMBOL_CASTLE);
 		int cx = rand() % map->width;
 		int cy = rand() % map->height;
+
+		struct entity* castle = castle_create(point_create(cx, cy));
 		castle->team = teamid == 1 ? team1 : team2;
-		castle->point = point_create(cx, cy);
 		map_set(map, cx, cy, castle); 
 	}
 }
@@ -208,6 +210,20 @@ struct team* team;
 					break;
 			}
 		}
+	}
+}
+
+void list_train_create(entity)
+struct entity* entity;
+{
+	if (entity && entity->type == TYPE_CASTLE)
+	{
+		if (entity->command)
+		{
+			command_destroy(entity->command);
+			entity->command = NULL;
+		}
+		entity->command = train_create();
 	}
 }
 
@@ -345,6 +361,10 @@ main()
 						}
 					}
 				}
+				break;
+			case 'j':
+			case 'J':
+				list_iterate(selection, list_train_create, NULL);
 				break;
 			case 27:
 				map_clearselection(map);
