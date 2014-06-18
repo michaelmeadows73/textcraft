@@ -211,6 +211,18 @@ struct team* team;
 			}
 		}
 	}
+	else if (team->gold >= 60)
+	{
+		long castlepoint = map_find(map, TYPE_CASTLE, team, point_create(0, 0));
+		if (castlepoint > -1)
+		{
+			struct entity* castle = map_get(map, point_getx(castlepoint), point_gety(castlepoint));
+			if (castle->command == NULL)
+			{
+				castle->command = train_create();
+			}
+		}
+	}
 }
 
 void list_train_create(entity)
@@ -327,7 +339,7 @@ main()
 					for (x = 0; x < map->width; x++)
 					{
 						struct entity* entity = map_get(map, x, y);
-						if (entity && entity->selected && (entity->team == playerteam))
+						if (entity && entity->selected && (entity->team == playerteam) && (entity->type == TYPE_PEASANT))
 						{
 							if (entity->command)
 							{
