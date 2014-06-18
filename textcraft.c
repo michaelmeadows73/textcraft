@@ -217,7 +217,7 @@ struct team* team;
 		if (castlepoint > -1)
 		{
 			struct entity* castle = map_get(map, point_getx(castlepoint), point_gety(castlepoint));
-			if (castle->command == NULL)
+			if (castle && castle->command == NULL)
 			{
 				castle->command = train_create();
 			}
