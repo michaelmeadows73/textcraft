@@ -1,8 +1,11 @@
-textcraft: textcraft.o train.o attack.o flee.o castle.o peasant.o getgold.o getstone.o getwood.o gather.o move.o command.o entity.o map.o team.o list.o point.o
-	gcc -ggdb -o textcraft textcraft.o train.o attack.o flee.o castle.o peasant.o getgold.o getstone.o getwood.o gather.o move.o command.o entity.o map.o team.o list.o point.o -lncurses
+textcraft: textcraft.o build.o train.o attack.o flee.o castle.o peasant.o getgold.o getstone.o getwood.o gather.o move.o command.o entity.o map.o team.o list.o point.o
+	gcc -ggdb -o textcraft textcraft.o build.o train.o attack.o flee.o castle.o peasant.o getgold.o getstone.o getwood.o gather.o move.o command.o entity.o map.o team.o list.o point.o -lncurses
 
 textcraft.o: textcraft.c
 	gcc -ggdb -c textcraft.c -o textcraft.o
+
+build.o: build.h build.c
+	gcc -ggdb -c build.c -o build.o
 
 train.o: train.h train.c
 	gcc -ggdb -c train.c -o train.o

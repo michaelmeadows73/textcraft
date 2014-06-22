@@ -6,12 +6,14 @@
 #define TYPE_PEASANT	2
 #define TYPE_CASTLE	3
 #define TYPE_MINE	4
+#define TYPE_FARM       5
 
 #define SYMBOL_ROCK	'#'
 #define SYMBOL_TREE	'T'
 #define SYMBOL_PEASANT 	'P'
 #define SYMBOL_CASTLE	'C'
 #define SYMBOL_MINE	'M'
+#define SYMBOL_FARM     'F'
 
 typedef void (*executefn)();  // struct entity*, struct map*
 typedef void (*tostringfn)(); // struct entity*, char*
@@ -31,7 +33,7 @@ struct entity
 	tostringfn tostring;
 };
 
-struct entity* entity_create();
+struct entity* entity_create(int, char);
 
 void entity_destroy(struct entity*);
 

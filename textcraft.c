@@ -16,6 +16,7 @@
 #include "flee.h"
 #include "attack.h"
 #include "train.h"
+#include "build.h"
 
 void map_blockset(map, blockx, blocky, blockwidth, blockheight, type, symbol)
 struct map* map;
@@ -239,6 +240,21 @@ struct entity* entity;
 	}
 }
 
+void list_build_create(entity, target)
+struct entity* entity;
+void* target;
+{
+	if (entity && entity->type == TYPE_PEASANT)
+	{
+		if (entity->command)
+		{
+			command_destroy(entity->command);
+			entity->command = NULL;		
+		}
+		entity->command = build_create((long) target);
+	}
+}
+
 main()
 {
 	struct team* team1 = team_create(1);
@@ -377,6 +393,10 @@ main()
 			case 'j':
 			case 'J':
 				list_iterate(selection, list_train_create, NULL);
+				break;
+			case 'f':
+			case 'F':
+				list_iterate(selection, list_build_create, (void*) point_create(cx, cy));
 				break;
 			case 27:
 				map_clearselection(map);
