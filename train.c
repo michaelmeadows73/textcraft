@@ -11,18 +11,22 @@ struct map* map;
 {
 	if (command->state == 0)
 	{
-		if (entity->team->gold >= 60)
-		{
-			command->desc = "Taking Gold";	
-		
-			entity->team->gold -= 60;
-
-			command->state = 1;
-		}
-		else
+		if (entity->team->gold < 60)
 		{
 			command->desc = "Not Enough Gold";
+			return 0;
 		}
+		if (entity->team->food <= map_count(map, TYPE_PEASANT, entity->team))
+		{
+			command->desc = "Not Enough Food";
+			return 0;
+		}
+	
+		command->desc = "Taking Gold";	
+		
+		entity->team->gold -= 60;
+		
+		command->state = 1;
 	}
 	if (command->state >= 1 && command->state < 100)
 	{

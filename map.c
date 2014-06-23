@@ -265,3 +265,26 @@ struct map* map;
 	list_iterate(entities, map_execute_entity, map);
 	list_destroy(entities);
 }
+
+int map_count(map, type, team)
+struct map* map;
+int type;
+struct team* team;
+{
+	int count = 0;
+
+	struct entity** current = map->entities;
+        struct entity** finish = map->entities + (map->width * map->height);
+	
+	while (current < finish)
+	{
+		struct entity* entity = *current;
+		if (entity && entity->type == type && entity->team == team)
+		{
+			count++; 
+		}
+		current++;
+	}
+
+	return count;
+}

@@ -212,7 +212,7 @@ struct team* team;
 			}
 		}
 	}
-	else if (team->gold >= 60)
+	else if (team->gold >= 60 && team->food >= map_count(map, TYPE_PEASANT, team))
 	{
 		long castlepoint = map_find(map, TYPE_CASTLE, team, point_create(0, 0));
 		if (castlepoint > -1)

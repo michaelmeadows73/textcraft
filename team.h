@@ -7,6 +7,7 @@ struct team
 	int gold;
 	int wood;
 	int stone;
+	int food;
 	struct team* enemy;
 };
 

@@ -16,68 +16,15 @@ struct map* map;
 	switch (command->state)
 	{
 		case 0:
-			if (entity->team->gold >= 80)
-			{
-				command->desc = "Taking Gold";
-
-				entity->team->gold -= 80;
-
-				command->state = 1;
-			}
-			else
-			{
-				command->desc = "Not Enough Gold";
-			}
-			break;
-		case 1:
-			if (entity->team->wood >= 40)
-			{
-				command->desc = "Taking Wood";
-
-				entity->team->wood -= 40;
-
-				command->state = 2;
-			}
-			else
-			{
-				command->desc = "Not Enough Wood";
-			}
-			break;
-		case 2:
-			if (entity->team->stone >= 20)
-			{
-				command->desc = "Taking Stone";
-
-				entity->team->stone -= 40;
-
-				command->state = 3;
-			}
-			else
-			{
-				command->desc = "Not Enough Stone";
-			}
-		case 3:
-			if (map_get(map, cx, cy) == NULL)
-			{
-				buildentity = entity_create(TYPE_FARM, SYMBOL_FARM);
-				buildentity->point = command->target;
-				buildentity->health = 1;
-				buildentity->team = entity->team;
-					
-				map_set(map, cx, cy, buildentity);				
-			}
-			command->state = 4;
-			break;
-		case 4:
 			if (command->child)
 			{
-				int result = command->child->execute(command->child, entity, map);
+				int result = !point_adjacent(entity->point, command->target) ? command->child->execute(command->child, entity, map) : 1;
 				
 				if (result)
 				{
 					command_destroy(command->child);
 					command->child = NULL;
-					command->state = 5;
+					command->state = 1;
 				}
 			}
 			else
@@ -85,20 +32,70 @@ struct map* map;
 				command->child = move_create(command->target);
 			}
 			break;
-		case 5:
-			command->desc = "Building Farm";
-			
+		case 1:
 			buildentity = map_get(map, cx, cy);
-			if (buildentity->health < 1000)
+			if (buildentity == NULL)
 			{
-				buildentity->health += 5;
+				if (entity->team->gold < 80)
+				{
+					command->desc = "Not Enough Gold";
+					break;
+				}
+				if (entity->team->wood < 40)
+				{
+					command->desc = "Not Enough Wood";
+					break;
+				}
+				if (entity->team->stone < 20)
+				{
+					command->desc = "Not Enough Stone";
+					break;
+				}
+				
+				command->desc = "Building Farm";
+	
+				entity->team->gold -= 80;
+				entity->team->wood -= 40;
+				entity->team->stone -= 20;
+
+				buildentity = entity_create(TYPE_FARM, SYMBOL_FARM);
+				buildentity->point = command->target;
+				buildentity->health = 1;
+				buildentity->team = entity->team;
+					
+				map_set(map, cx, cy, buildentity);	
 			}
-			else
+			command->state = 2;
+			break;
+		case 2:
+			buildentity = map_get(map, cx, cy);
+			if (buildentity->type == TYPE_FARM && buildentity->team == entity->team)
 			{
-				command->state = 6;
-				return 1;
+				// if not finished farm
+				if (buildentity->health < 1001)
+				{
+					// increase farm 'health' - continue command
+					command->desc = "Building Farm";
+					buildentity->health += 5;
+					return 0;
+				}
+				
+				// if finished farm
+				if (buildentity->health == 1001)
+				{
+					// ensure many peasants building one farm doesn't increase food many times
+					buildentity->health = 1002;
+
+					// increase food - exit command
+					entity->team->food += 4;
+					command->state = 3;
+					return 1;
+				}
+			
 			}
-			break;		
+			// not teams farm - exit command
+			command->state = 3;
+			return 1;
 	}
 	return 0;
 }
