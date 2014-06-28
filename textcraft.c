@@ -127,7 +127,7 @@ int minid;
 {
 	map_clearselection(map);
 
-	struct entity* peasant = NULL;
+	struct entity* current = NULL;
 
 	int x, y;
 	for (y = 0; y < map->height; y++)
@@ -137,20 +137,20 @@ int minid;
 			struct entity* entity = map_get(map, x, y);
 			if (entity && (entity->type == type) && (entity->team == team) && (entity->id >= minid))
 			{
-				if ((peasant == NULL) || (peasant && (entity->id < peasant->id)))
+				if ((current == NULL) || (current && (entity->id < current->id)))
 				{
-					peasant = entity;
+					current = entity;
 				}
 			}
 		}
 	}
 
-	if (peasant)
+	if (current)
 	{
-		peasant->selected = 1;
+		current->selected = 1;
 	}
 	
-	return peasant ? peasant->id : -1;
+	return current ? current->id : -1;
 }
 
 struct entity* ai_idlepeasant(map, team)
@@ -405,6 +405,10 @@ main()
 			case 'p':
 			case 'P':
 				selectid = map_select(map, cx, cy, TYPE_PEASANT, playerteam, selectid + 1);
+				break;
+			case 'c':
+			case 'C':
+				selectid = map_select(map, cx, cy, TYPE_CASTLE, playerteam, selectid + 1);
 				break;
 			case 'q':
 			case 'Q':
