@@ -9,6 +9,9 @@ struct team
 	int stone;
 	int food;
 	struct team* enemy;
+
+	char* message;
+	int messagetime;
 };
 
 struct team* team_create(int);
@@ -16,5 +19,9 @@ struct team* team_create(int);
 void team_print(struct team*);
 
 void team_destroy(struct team*);
+
+char* team_getmessage(struct team*);
+
+void team_setmessage(struct team*, char*);
 
 #endif

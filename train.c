@@ -13,31 +13,25 @@ struct map* map;
 	{
 		if (entity->team->gold < 60)
 		{
-			command->desc = "Not Enough Gold";
-			return 0;
+			team_setmessage(entity->team, "Not Enough Gold");
+			return 1;
 		}
 		if (entity->team->food <= map_count(map, TYPE_PEASANT, entity->team))
 		{
-			command->desc = "Not Enough Food";
-			return 0;
+			team_setmessage(entity->team, "Not Enough Food");
+			return 1;
 		}
 	
-		command->desc = "Taking Gold";	
-		
 		entity->team->gold -= 60;
 		
 		command->state = 1;
 	}
 	if (command->state >= 1 && command->state < 100)
 	{
-		command->desc = "Training Peasant";
-
 		command->state++;
 	}
 	if (command->state >= 100)
 	{
-		command->desc = "Releasing Peasant";
-
 		int ex = point_getx(entity->point);
 		int ey = point_gety(entity->point);
 
@@ -60,6 +54,7 @@ struct map* map;
 							struct entity* peasant = peasant_create(point);
 							peasant->team = entity->team;
 							map_set(map, px, py, peasant);
+							team_setmessage(entity->team, "Peasant Complete");
 							return 1;
 						}
 					}				

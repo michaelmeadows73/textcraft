@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <ncurses.h>
 #include "list.h"
@@ -426,6 +427,12 @@ main()
 		map_print(map, cx, cy);
 
 		team_print(playerteam);
+
+		char* message = team_getmessage(playerteam);
+		if (message)
+		{
+			mvprintw(height - 1, width - strlen(message), "%s", message);
+		}
 
 		// print selected entity
 		if (list_count(selection) == 1)

@@ -38,22 +38,20 @@ struct map* map;
 			{
 				if (entity->team->gold < 80)
 				{
-					command->desc = "Not Enough Gold";
-					break;
+					team_setmessage(entity->team, "Not Enough Gold");
+					return 1;
 				}
 				if (entity->team->wood < 40)
 				{
-					command->desc = "Not Enough Wood";
-					break;
+					team_setmessage(entity->team, "Not Enough Wood");
+					return 1;
 				}
 				if (entity->team->stone < 20)
 				{
-					command->desc = "Not Enough Stone";
-					break;
+					team_setmessage(entity->team, "Not Enough Stone");
+					return 1;
 				}
 				
-				command->desc = "Building Farm";
-	
 				entity->team->gold -= 80;
 				entity->team->wood -= 40;
 				entity->team->stone -= 20;
@@ -75,7 +73,6 @@ struct map* map;
 				if (buildentity->health < 1001)
 				{
 					// increase farm 'health' - continue command
-					command->desc = "Building Farm";
 					buildentity->health += 5;
 					return 0;
 				}
@@ -88,13 +85,12 @@ struct map* map;
 
 					// increase food - exit command
 					entity->team->food += 4;
-					command->state = 3;
+					team_setmessage(entity->team, "Farm Complete");
 					return 1;
 				}
 			
 			}
 			// not teams farm - exit command
-			command->state = 3;
 			return 1;
 	}
 	return 0;
