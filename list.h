@@ -19,6 +19,8 @@ struct list* list_create();
 
 void list_add(struct list*, void*);
 
+void list_prepend(struct list*, void*);
+
 int list_count(struct list*);
 
 int list_empty(struct list*);

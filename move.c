@@ -37,6 +37,13 @@ struct map* map;
 				// found obstacle - recalculate path
 				list_destroy(command->path);
 				command->path = NULL;
+				
+				if (nextpoint == command->target)
+				{
+					// found obstacle at finish - stop
+					command->target = -1;
+					return 1;
+				}
 			}
 		}
 		else

@@ -1,6 +1,11 @@
+
+#define NDEBUG 1
+
 #include <stdlib.h>
 #include <limits.h>
+#include <math.h>
 #include <ncurses.h>
+#include <assert.h>
 #include "point.h"
 #include "list.h"
 #include "entity.h"
@@ -112,87 +117,223 @@ int cy;
 	}
 }
 
+struct node
+{
+	long point;
+	double f;
+	double g;
+	double h;
+	struct node* parent;
+};
+
+struct node* node_create()
+{
+	struct node* node = (struct node*) malloc(sizeof(struct node));
+	node->point = 0;
+	node->f = 0.0;
+	node->g = 0.0;
+	node->h = 0.0;
+	node->parent = NULL;
+	return node;
+}
+
+void node_destroy(node)
+struct node* node;
+{
+	free(node);
+}
+
+int node_equals(node0, node1)
+struct node* node0;
+struct node* node1;
+{
+	return point_equals(node0->point, node1->point);
+}
+
+void node_add(map, start, finish, open, closed, current_node, nx, ny)
+struct map* map;
+long start;
+long finish;
+struct list* open;
+struct list* closed;
+struct node* current_node;
+int nx;
+int ny;
+{
+	if (nx >= 0 && nx < map->width && ny >= 0 && ny < map->height)
+	{
+		struct entity* entity = map_get(map, nx, ny);
+		if (map_get(map, nx, ny) == NULL || point_create(nx, ny) == finish)
+		{	
+			struct node* neighbour_node = node_create();
+			neighbour_node->point = point_create(nx, ny);
+			neighbour_node->g = current_node->g + point_dist(current_node->point, neighbour_node->point);
+			neighbour_node->h = point_dist(neighbour_node->point, finish);
+			neighbour_node->f = neighbour_node->g + neighbour_node->h;
+			neighbour_node->parent = current_node;
+
+			if (!list_contains(closed, (void*) neighbour_node, node_equals))
+			{
+				// insert neighbour_node so queue is ordered by distance to finish descending
+				struct link* link = open->first;
+				while (link)
+				{
+					struct node* open_node = link->data;
+					if (point_equals(open_node->point, neighbour_node->point))
+					{
+						// if existing node better
+						if (open_node->f > neighbour_node->f)
+						{
+							// update existing node with better path
+							open_node->g = neighbour_node->g;
+							open_node->h = neighbour_node->h;
+							open_node->f = open_node->g + open_node->h;
+							open_node->parent = neighbour_node->parent;
+
+							// delete link with existing node
+							if (!link->previous && !link->next)
+							{
+								open->first = NULL;
+								open->last = NULL;
+							}		
+							else if (!link->previous && link->next)
+							{
+								link->next->previous = NULL;
+								open->first = link->next;
+								
+							}
+							else if (link->previous && !link->next)
+							{
+								link->previous->next = NULL;
+								open->last = link->previous;
+							}
+							else if (link->previous && link->next)
+							{
+								link->previous->next = link->next;
+								link->next->previous = link->previous;
+							}
+							open->count--;
+							free(link);						
+
+							// cause existing node to be reinserted into correct place in open 
+							neighbour_node = open_node;
+						}
+						else
+						{
+							// cause worse neighbour node not to be added to open
+							neighbour_node = NULL;
+						}
+						break;
+					}
+					link = link->next;
+				}
+
+				if (neighbour_node)
+				{
+				link = open->first;
+				while (link)
+				{
+					struct node* open_node = link->data;
+					if (open_node->f > neighbour_node->f)
+					{
+						// insert neighbour path
+						struct link* newlink = (struct link*) malloc(sizeof(struct link));
+						newlink->next = link;
+						newlink->previous = link->previous;
+						newlink->data = neighbour_node;
+						if (link->previous)
+						{
+							link->previous->next = newlink;
+						}
+						if (link)
+						{
+							link->previous = newlink;
+						}
+
+						if (link == open->first)
+						{
+							open->first = newlink;
+						}
+						open->count = open->count + 1;
+						break;
+					}
+					link = link->next;
+				}
+				if (link == NULL)
+				{
+					list_add(open, neighbour_node);
+				}
+				}
+			}
+		}
+	}
+}
+
 struct list* map_shortestpath(map, start, finish)
 struct map* map;
 long start;
 long finish;
 {
-	struct list* start_path = list_create();
-	list_add(start_path, (void*) start);
+	struct list* open = list_create();
+	struct list* closed = list_create();
 
-	struct list* queue = list_create();
-	list_add(queue, start_path);
+	struct node* start_node = node_create();
+	start_node->point = start;
+	start_node->g = 0.0;
+	start_node->h = point_dist(start, finish); 
+	start_node->f = start_node->g + start_node->h;
+	start_node->parent = NULL;
 
-	struct list* visited = list_create();
-	list_add(visited, (void*) start);
-
-	while (!list_empty(queue))
+	list_add(open, start_node);
+	
+	while (!list_empty(open))
 	{
-		struct list* current_path = list_getfirst(queue);
-		list_removefirst(queue);
-		
-		long current = (long) list_getlast(current_path);	
-		if (point_equals(current, finish))
+		struct node* current_node = list_getfirst(open);
+		list_removefirst(open);
+
+		if (point_equals(current_node->point, finish))
 		{
-			list_iterate(queue, list_destroy, NULL);
-			list_destroy(queue);
-			list_destroy(visited);
+			struct list* current_path = list_create();
+			while (current_node)
+			{
+				list_prepend(current_path, (void*) current_node->point);
+				current_node = current_node->parent;
+			}
+
+			list_iterate(open, node_destroy, NULL);
+			list_destroy(open);
+
+			list_iterate(closed, node_destroy, NULL);
+			list_destroy(closed);
 			return current_path;
 		}
 
-		int cx = point_getx(current);
-		int cy = point_gety(current);
-		
-		int pass;
-		for (pass = 0; pass <=1 ; pass++)
-		{
-			int dx, dy;
-			for (dy = -1; dy <= +1; dy++)
-			{
-				for (dx = -1; dx <= +1; dx++)
-				{
-					// first pass (0) consider non-diagonal neighbours
-					// second pass (1) consider diagonal neighbours
-					if ((!pass && ((dx && !dy) || (!dx && dy))) || (pass && dx && dy))
-					{
-						int x = cx + dx;
-						int y = cy + dy;
-						if (x >= 0 && x < map->width && y >= 0 && y < map->height)
-						{
-							long neighbour = point_create(x, y);
+		list_add(closed, (void*) current_node);
 
-		                                        if (map_get(map, x, y))
-							{
-								if (point_equals(neighbour, finish))
-								{
-									list_iterate(queue, list_destroy, NULL);
-									list_destroy(queue);
-									list_destroy(visited);
-									return current_path;
-								}
-							}
-							else
-							{			
-								if (!list_contains(visited, (void*) neighbour, point_equals))
-								{
-									struct list* neighbour_path = list_clone(current_path);
-									list_add(neighbour_path, (void*) neighbour);
-									list_add(queue, neighbour_path);
-									list_add(visited, (void*) neighbour);
-								}
-							}
-						}
-					}
+		int cx = point_getx(current_node->point);
+		int cy = point_gety(current_node->point);
+		
+		int dx, dy;
+		for (dy = -1; dy <= +1; dy++)
+		{
+			for (dx = -1; dx <= +1; dx++)
+			{
+				if (dx || dy)
+				{
+					int nx = cx + dx;
+					int ny = cy + dy;
+					
+					node_add(map, start, finish, open, closed, current_node, nx, ny);
 				}
 			}
 		}
-
-		list_destroy(current_path);
 	}
 
-	list_iterate(queue, list_destroy, NULL);
-	list_destroy(queue);
-	list_destroy(visited);
+	list_iterate(open, node_destroy, NULL);
+	list_destroy(open);
+
+	list_iterate(closed, node_destroy, NULL);
+	list_destroy(closed);
 	return NULL;	
 }
 

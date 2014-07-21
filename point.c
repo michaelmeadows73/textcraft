@@ -1,3 +1,5 @@
+#include <math.h>
+
 long point_create(x, y)
 int x;
 int y;
@@ -37,6 +39,13 @@ long point1;
 	int dy = y0 - y1;
 
 	return dx * dx + dy * dy;
+}
+
+double point_dist(point0, point1)
+long point0;
+long point1;
+{
+	return sqrt(point_dist2(point0, point1));
 }
 
 int point_adjacent(point0, point1)

@@ -47,6 +47,32 @@ void* data;
 	list->count++;
 }
 
+void list_prepend(list, data)
+struct list* list;
+void* data;
+{
+	struct link* old_first = list->first;
+	struct link* new_first = link_create();
+	new_first->data = data;
+
+	if (old_first)
+	{
+		old_first->previous = new_first;
+		new_first->next = old_first;
+
+		list->first = new_first;
+	}
+	else
+	{
+		list->first = new_first;
+		if (list->last == NULL)
+		{
+			list->last = new_first;
+		}
+	}
+	list->count++;
+}
+
 int list_count(list)
 struct list* list;
 {
