@@ -155,7 +155,7 @@ struct map* map;
 long start;
 long finish;
 struct list* open;
-struct list* closed;
+int* closed;
 struct node* current_node;
 int nx;
 int ny;
@@ -163,7 +163,7 @@ int ny;
 	if (nx >= 0 && nx < map->width && ny >= 0 && ny < map->height)
 	{
 		struct entity* entity = map_get(map, nx, ny);
-		if (map_get(map, nx, ny) == NULL || point_create(nx, ny) == finish)
+		if ((map_get(map, nx, ny) == NULL || point_create(nx, ny) == finish) && !closed[nx + ny * map->width])
 		{	
 			struct node* neighbour_node = node_create();
 			neighbour_node->point = point_create(nx, ny);
@@ -172,64 +172,62 @@ int ny;
 			neighbour_node->f = neighbour_node->g + neighbour_node->h;
 			neighbour_node->parent = current_node;
 
-			if (!list_contains(closed, (void*) neighbour_node, node_equals))
+			// insert neighbour_node so queue is ordered by distance to finish descending
+			struct link* link = open->first;
+			while (link)
 			{
-				// insert neighbour_node so queue is ordered by distance to finish descending
-				struct link* link = open->first;
-				while (link)
+				struct node* open_node = link->data;
+				if (point_equals(open_node->point, neighbour_node->point))
 				{
-					struct node* open_node = link->data;
-					if (point_equals(open_node->point, neighbour_node->point))
+					// if existing node better
+					if (open_node->f > neighbour_node->f)
 					{
-						// if existing node better
-						if (open_node->f > neighbour_node->f)
-						{
-							// update existing node with better path
-							open_node->g = neighbour_node->g;
-							open_node->h = neighbour_node->h;
-							open_node->f = open_node->g + open_node->h;
-							open_node->parent = neighbour_node->parent;
+						// update existing node with better path
+						open_node->g = neighbour_node->g;
+						open_node->h = neighbour_node->h;
+						open_node->f = open_node->g + open_node->h;
+						open_node->parent = neighbour_node->parent;
 
-							// delete link with existing node
-							if (!link->previous && !link->next)
-							{
-								open->first = NULL;
-								open->last = NULL;
-							}		
-							else if (!link->previous && link->next)
-							{
-								link->next->previous = NULL;
-								open->first = link->next;
-								
-							}
-							else if (link->previous && !link->next)
-							{
-								link->previous->next = NULL;
-								open->last = link->previous;
-							}
-							else if (link->previous && link->next)
-							{
-								link->previous->next = link->next;
-								link->next->previous = link->previous;
-							}
-							open->count--;
-							free(link);						
-
-							// cause existing node to be reinserted into correct place in open 
-							neighbour_node = open_node;
-						}
-						else
+						// delete link with existing node
+						if (!link->previous && !link->next)
 						{
-							// cause worse neighbour node not to be added to open
-							neighbour_node = NULL;
+							open->first = NULL;
+							open->last = NULL;
+						}		
+						else if (!link->previous && link->next)
+						{
+							link->next->previous = NULL;
+							open->first = link->next;
+							
 						}
-						break;
+						else if (link->previous && !link->next)
+						{
+							link->previous->next = NULL;
+							open->last = link->previous;
+						}
+						else if (link->previous && link->next)
+						{
+							link->previous->next = link->next;
+							link->next->previous = link->previous;
+						}
+						open->count--;
+						free(link);						
+
+						// cause existing node to be reinserted into correct place in open 
+						neighbour_node = open_node;
 					}
-					link = link->next;
+					else
+					{
+						// cause worse neighbour node not to be added to open
+						neighbour_node = NULL;
+					}
+					break;
 				}
+				link = link->next;
+			}
 
-				if (neighbour_node)
-				{
+			if (neighbour_node)
+			{
 				link = open->first;
 				while (link)
 				{
@@ -263,7 +261,6 @@ int ny;
 				{
 					list_add(open, neighbour_node);
 				}
-				}
 			}
 		}
 	}
@@ -275,7 +272,7 @@ long start;
 long finish;
 {
 	struct list* open = list_create();
-	struct list* closed = list_create();
+	int* closed = (int*) calloc(map->width * map->height, sizeof(int)); 
 
 	struct node* start_node = node_create();
 	start_node->point = start;
@@ -303,15 +300,14 @@ long finish;
 			list_iterate(open, node_destroy, NULL);
 			list_destroy(open);
 
-			list_iterate(closed, node_destroy, NULL);
-			list_destroy(closed);
+			free(closed);
 			return current_path;
 		}
 
-		list_add(closed, (void*) current_node);
-
 		int cx = point_getx(current_node->point);
 		int cy = point_gety(current_node->point);
+		
+		closed[cx + cy * map->width] = 1;	
 		
 		int dx, dy;
 		for (dy = -1; dy <= +1; dy++)
@@ -332,8 +328,7 @@ long finish;
 	list_iterate(open, node_destroy, NULL);
 	list_destroy(open);
 
-	list_iterate(closed, node_destroy, NULL);
-	list_destroy(closed);
+	free(closed);
 	return NULL;	
 }
 
