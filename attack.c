@@ -20,19 +20,41 @@ struct map* map;
 {
 	long enemypoint, castlepoint;
 	struct entity* mapentity;
+
+	int tx, ty;
+	struct entity* tentity;
 	switch (command->state)
 	{
 		case 0:
-			enemypoint = map_find(map, TYPE_PEASANT, entity->team->enemy, command->target);
-		
-			if (enemypoint != -1)
+			tx = point_getx(command->target);
+			ty = point_gety(command->target);
+			tentity = map_get(map, tx, ty);
+			if (tentity != NULL)
 			{
-				command->targetentity = map_get(map, point_getx(enemypoint), point_gety(enemypoint));
-				command->state = 1;
+				if (tentity->team == entity->team->enemy)
+				{
+					command->targetentity = tentity;
+					command->state = 1;
+				}
+				else
+				{
+					// cannot attack units on own team
+					return 1;
+				} 
 			}
 			else
 			{
-				return 1;
+				enemypoint = map_find(map, TYPE_NONE, entity->team->enemy, command->target);
+				if (enemypoint != -1)
+				{
+					command->targetentity = map_get(map, point_getx(enemypoint), point_gety(enemypoint));
+					command->state = 1;
+				}
+				else
+				{
+					// cannot find enemy unit to attack
+					return 1;
+				}
 			}
 			break;		
 		case 1:
@@ -40,35 +62,42 @@ struct map* map;
 			{
 				command->targetentity->health = command->targetentity->health - rand() % 10;
 
+				// if target entity is a live peasant
 				if (command->targetentity->health > 0)
 				{
-					
-					// if target entity is doing something other than fleeing and has low health - stop
-					if (command->targetentity->command && command->targetentity->command->execute != flee_execute && command->targetentity->health <= 33)
+					// if target entity can attack or flee
+					if (command->targetentity->type == TYPE_PEASANT)
 					{
-						command_destroy(command->targetentity->command);
-						command->targetentity->command = NULL;
-					}
-
-					// if target entity is doing something other than attacking and has high health - stop
-					if (command->targetentity->command && command->targetentity->command->execute != attack_execute && command->targetentity->health > 33) {
-						command_destroy(command->targetentity->command);
-						command->targetentity->command = NULL;
-					}
-
-					// if target entity has stopped
-					if (command->targetentity->command == NULL)
-					{
-						if (command->targetentity->health > 33)
+						
+						// if target entity is not fleeing and has low health - stop
+						if (command->targetentity->command && command->targetentity->command->execute != flee_execute && command->targetentity->health <= 33)
 						{
-							// high health - attack
-							command->targetentity->command = attack_create(entity->point);
+							command_destroy(command->targetentity->command);
+							command->targetentity->command = NULL;
 						}
-						else
+
+						// if target entity is not attacking and has high health - stop
+						if (command->targetentity->command && command->targetentity->command->execute != attack_execute && command->targetentity->health > 33) 
 						{
-							// low health - flee
-							command->targetentity->command = flee_create();
+							command_destroy(command->targetentity->command);
+							command->targetentity->command = NULL;
 						}
+
+						// if target entity has stopped
+						if (command->targetentity->command == NULL)
+						{
+							if (command->targetentity->health > 33)
+							{
+								// high health - attack
+								command->targetentity->command = attack_create(entity->point);
+							}
+							else
+							{
+								// low health - flee
+								command->targetentity->command = flee_create();
+							}
+						}
+
 					}
 				}
 				else

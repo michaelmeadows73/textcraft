@@ -1,12 +1,13 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#define TYPE_ROCK    	0
-#define TYPE_TREE    	1
-#define TYPE_PEASANT	2
-#define TYPE_CASTLE	3
-#define TYPE_MINE	4
-#define TYPE_FARM       5
+#define TYPE_NONE	0
+#define TYPE_ROCK    	1
+#define TYPE_TREE    	2
+#define TYPE_PEASANT	3
+#define TYPE_CASTLE	4
+#define TYPE_MINE	5
+#define TYPE_FARM       6
 
 #define SYMBOL_ROCK	'#'
 #define SYMBOL_TREE	'T'
