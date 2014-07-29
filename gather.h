@@ -11,10 +11,9 @@ struct gather
 	struct command base;
 
 	int collecttype;
-	int collectremove;
 	collectfn collect;
 };
 
-struct gather* gather_create(long, int, int, collectfn, char*);
+struct gather* gather_create(long, int, collectfn, char*);
 
 #endif

@@ -19,7 +19,7 @@
 #include "train.h"
 #include "build.h"
 
-void map_blockset(map, blockx, blocky, blockwidth, blockheight, type, symbol)
+void map_blockset(map, blockx, blocky, blockwidth, blockheight, type, symbol, health)
 struct map* map;
 int blockx;
 int blocky;
@@ -27,6 +27,7 @@ int blockwidth;
 int blockheight;
 int type;
 char symbol;
+int health;
 {
 	int x, y;
 	for (y = blocky; y < blocky + blockheight; y++)
@@ -35,9 +36,17 @@ char symbol;
 		{
 			struct entity* entity = entity_create(type, symbol);
 			entity->point = point_create(x, y);
+			entity->health = health;
 			map_set(map, x, y, entity);
 		}
 	}  	
+}
+
+void mine_tostring(mine, str)
+struct entity* mine;
+char* str;
+{
+	sprintf(str, "Mine: %d", mine->health);
 }
 
 void world_generate(map, team1, team2)
@@ -50,8 +59,8 @@ struct team* team2;
 	int j;
 	for (j = 0; j < 20; j++)
 	{
-		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, TYPE_TREE, SYMBOL_TREE);
-		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, TYPE_ROCK, SYMBOL_ROCK);
+		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, TYPE_TREE, SYMBOL_TREE, 10);
+		map_blockset(map, rand() % (map->width - 10), rand() % (map->height - 10), rand() % 10, rand() % 10, TYPE_ROCK, SYMBOL_ROCK, 20);
 	}
 
 	int i;
@@ -71,6 +80,8 @@ struct team* team2;
 		int mx = rand() % map->width;
 		int my = rand() % map->height;
 		mine->point = point_create(mx, my);
+		mine->health = 500 + 10 * (rand() % 250);
+		mine->tostring = mine_tostring;
 		map_set(map, mx, my, mine);
 	}
 
@@ -312,7 +323,7 @@ main()
 			for (x = 0; x < map->width; x++)
 			{
 				struct entity* entity = map_get(map, x, y);
-				if (entity && entity->selected && (entity->team == playerteam))
+				if (entity && entity->selected && (entity->team == playerteam || entity->team == NULL))
 				{
 					list_add(selection, entity);
 				}
@@ -340,7 +351,7 @@ main()
 				break;
 			case ' ':
 				mapentity = map_get(map, cx, cy);
-				if (mapentity && mapentity->team == playerteam)
+				if (mapentity && (mapentity->team == playerteam || mapentity->team == NULL))
 				{
 					mapentity->selected = 1;
 				}	
@@ -409,6 +420,10 @@ main()
 			case 'c':
 			case 'C':
 				selectid = map_select(map, cx, cy, TYPE_CASTLE, playerteam, selectid + 1);
+				break;
+			case 'm':
+			case 'M':
+				selectid = map_select(map, cx, cy, TYPE_MINE, NULL, selectid + 1);
 				break;
 			case 'q':
 			case 'Q':

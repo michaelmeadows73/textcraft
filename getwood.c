@@ -11,5 +11,5 @@ struct gather* getwood_create(target)
 long target;
 {
 	
-	return gather_create(target, TYPE_TREE, 1, getwood_collect, "Collecting Wood");
+	return gather_create(target, TYPE_TREE, getwood_collect, "Collecting Wood");
 }

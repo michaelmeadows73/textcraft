@@ -68,7 +68,9 @@ struct map* map;
 			mapentity = map_get(map, cx, cy);
 			if (mapentity && mapentity->type == gather->collecttype)
 			{
-				if (gather->collectremove)
+				mapentity->health -= 10;
+
+				if (mapentity->health <= 0)
 				{
 					entity_destroy(mapentity);
 					map_set(map, cx, cy, NULL);
@@ -124,10 +126,9 @@ struct map* map;
 	return 0;
 }
 
-struct gather* gather_create(target, collecttype, collectremove, collect, desc)
+struct gather* gather_create(target, collecttype, collect, desc)
 long target;
 int collecttype;
-int collectremove;
 collectfn collect;
 char* desc;
 {
@@ -140,7 +141,6 @@ char* desc;
 	command->desc = desc;
 
 	gather->collecttype = collecttype;
-	gather->collectremove = collectremove;	
 	gather->collect = collect;
 	return gather;
 }
