@@ -267,6 +267,24 @@ void* target;
 	}
 }
 
+
+
+struct team* map_getwinningteam(map, team0, team1)
+struct map* map;
+struct team* team0;
+struct team* team1;
+{
+	if (!map_hasunits(map, team0))
+	{
+		return team1;
+	}
+	if (!map_hasunits(map, team1))
+	{
+		return team0;
+	}
+	return NULL;
+}
+
 main()
 {
 	struct team* team1 = team_create(1);
@@ -466,9 +484,31 @@ main()
 		}
 
 		list_destroy(selection);
+		
+		struct team* winningteam = map_getwinningteam(map, playerteam, computerteam);
+		if (winningteam)
+		{
+			if (winningteam == playerteam)
+			{
+				attron(COLOR_PAIR(6));
+				mvprintw((height / 2) - 1, (width / 2) - 4, "         ");
+				mvprintw((height / 2),     (width / 2) - 4, " Victory ");
+				mvprintw((height / 2) + 1, (width / 2) - 4, "         ");
+				attroff(COLOR_PAIR(6));
+			}
+			if (winningteam == computerteam)
+			{
+				attron(COLOR_PAIR(4));
+				mvprintw((height / 2) - 1, (width / 2) - 4, "        ");
+				mvprintw((height / 2),     (width / 2) - 4, " Defeat ");
+				mvprintw((height / 2) + 1, (width / 2) - 4, "        ");
+				attroff(COLOR_PAIR(4));
+			}
+			running = 0;
+		}
 
 		refresh();
-		
+	
 		usleep(100);
 	}
 

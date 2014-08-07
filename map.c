@@ -393,3 +393,22 @@ struct team* team;
 
 	return count;
 }
+
+int map_hasunits(map, team)
+struct map* map;
+struct team* team;
+{
+	struct entity** current = map->entities;
+	struct entity** finish = map->entities + (map->width * map->height);
+
+	while (current < finish)
+	{
+		struct entity* entity = *current;
+		if (entity && entity->team == team)
+		{
+			return 1;
+		}
+		current++;
+	}
+	return 0;
+}

@@ -27,4 +27,6 @@ long map_find(struct map*, int, struct team*, long);
 void map_execute(struct map*);
 
 int map_count(struct map*, int, struct team*);
+
+int map_hasunits(struct map*, struct team*);
 #endif
