@@ -38,6 +38,26 @@ struct team* team;
 	return NULL;
 }
 
+struct entity* ai_buildpeasant(map, team)
+struct map* map;
+struct team* team;
+{
+	int x, y;
+	for (y = 0; y < map->height; y++)
+	{
+		for (x = 0; x < map->width; x++)
+		{
+			struct entity* entity = map_get(map, x, y);
+			if (entity && entity->type == TYPE_PEASANT && entity->team == team && entity->command && strcmp(entity->command->desc, "Building Farm") == 0) // yuk commands need a type
+			{
+				return entity;
+			}		
+		}
+	}
+	return NULL;
+
+}
+
 int ai_randomresourcetype()
 {
 	int random = rand() % 3;
@@ -57,10 +77,55 @@ void ai(map, team)
 struct map* map;
 struct team* team;
 {
+	int peasants = map_count(map, TYPE_PEASANT, team);
+
+	// build farms
+	if (team->gold >= 80 && team->wood >= 40 && team->stone >= 20 && team->food == peasants && ai_buildpeasant(map, team) == NULL)
+	{
+		long anypoint = map_find(map, TYPE_PEASANT, team, point_create(0, 0));
+		struct entity* anypeasant = map_get(map, point_getx(anypoint), point_gety(anypoint));
+		if (anypeasant != NULL)
+		{
+			if (anypeasant->command)
+			{
+				command_destroy(anypeasant->command);
+				anypeasant->command = NULL;
+			}
+
+			long castlepoint = map_find(map, TYPE_CASTLE, team, point_create(0, 0));
+			if (castlepoint > -1)
+			{
+				int castlex = point_getx(castlepoint);
+				int castley = point_gety(castlepoint);
+				
+				long searchpoint = point_create(castlex + 5, castley);
+				long emptypoint = map_find(map, -1, NULL, searchpoint);
+				anypeasant->command = (struct command*) build_create(emptypoint);
+			}
+		}
+	}
+
+	// collect resources
 	struct entity* idlepeasant = ai_idlepeasant(map, team);
 	if (idlepeasant != NULL)
 	{
-		int resourcetype = ai_randomresourcetype();
+		int resourcetype;
+		if (team->gold == 0)
+		{
+			resourcetype = TYPE_MINE;
+		}		
+		else if (team->wood == 0)
+		{
+			resourcetype = TYPE_TREE;
+		}
+		else if (team->stone == 0)
+		{
+			resourcetype = TYPE_ROCK;
+		}
+		else
+		{
+			resourcetype = ai_randomresourcetype();
+		}
 		
 		long resourcepoint = map_find(map, resourcetype, NULL, idlepeasant->point);
 		if (resourcepoint > -1)
@@ -78,8 +143,11 @@ struct team* team;
 					break;
 			}
 		}
+		return;
 	}
-	else if (team->gold >= 60 && team->food >= map_count(map, TYPE_PEASANT, team))
+	
+	// train peasants
+	if (team->gold >= 60 && team->food >= peasants)
 	{
 		long castlepoint = map_find(map, TYPE_CASTLE, team, point_create(0, 0));
 		if (castlepoint > -1)
@@ -90,5 +158,6 @@ struct team* team;
 				castle->command = train_create();
 			}
 		}
+		return;
 	}
 }

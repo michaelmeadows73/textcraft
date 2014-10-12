@@ -321,7 +321,7 @@ long start;
 		for (x1 = 0; x1 < map->width; x1++)
 		{
 			struct entity* entity = *(current++);
-			if (entity && (entity->type == type || type == TYPE_NONE) && entity->team == team)
+			if ((entity && (entity->type == type || type == TYPE_NONE) && entity->team == team) || (!entity && type == -1))
 			{
 				long d = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
 				if (d < mind)
