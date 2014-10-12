@@ -52,15 +52,19 @@ struct map* map;
 	}
 }
 
-int map_select(map, cx, cy, type, team, minid)
+int map_select(map, cx, cy, type, team, minid, multiple)
 struct map* map;
 int cx;
 int cy;
 int type;
 struct team* team;
 int minid;
+int multiple;
 {
-	map_clearselection(map);
+	if (!multiple)
+	{
+		map_clearselection(map);
+	}
 
 	struct entity* current = NULL;
 
@@ -283,15 +287,15 @@ main()
 				break;
 			case 'p':
 			case 'P':
-				selectid = map_select(map, cx, cy, TYPE_PEASANT, playerteam, selectid + 1);
+				selectid = map_select(map, cx, cy, TYPE_PEASANT, playerteam, selectid + 1, c == 'P');
 				break;
 			case 'c':
 			case 'C':
-				selectid = map_select(map, cx, cy, TYPE_CASTLE, playerteam, selectid + 1);
+				selectid = map_select(map, cx, cy, TYPE_CASTLE, playerteam, selectid + 1, 0);
 				break;
 			case 'm':
 			case 'M':
-				selectid = map_select(map, cx, cy, TYPE_MINE, NULL, selectid + 1);
+				selectid = map_select(map, cx, cy, TYPE_MINE, NULL, selectid + 1, 0);
 				break;
 			case 'q':
 			case 'Q':
