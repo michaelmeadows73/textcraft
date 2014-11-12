@@ -48,7 +48,7 @@ struct team* team;
 		for (x = 0; x < map->width; x++)
 		{
 			struct entity* entity = map_get(map, x, y);
-			if (entity && entity->type == TYPE_PEASANT && entity->team == team && entity->command && strcmp(entity->command->desc, "Building Farm") == 0) // yuk commands need a type
+			if (entity && entity->type == TYPE_PEASANT && entity->team == team && entity->command && entity->command->type == COMMAND_BUILD)
 			{
 				return entity;
 			}		

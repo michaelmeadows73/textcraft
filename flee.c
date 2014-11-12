@@ -56,6 +56,7 @@ struct map* map;
 struct command* flee_create()
 {
 	struct command* command = command_create();
+	command->type = COMMAND_FLEE;
 	command->target = 0;
 	command->path = NULL;
 	command->child = NULL;

@@ -63,6 +63,7 @@ struct command* move_create(target)
 long target;
 {
 	struct command* command = command_create();
+	command->type = COMMAND_MOVE;
 	command->target = target;
 	command->path = NULL;
 	command->child = NULL;

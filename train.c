@@ -68,6 +68,7 @@ struct map* map;
 struct command* train_create()
 {
 	struct command* command = command_create();
+	command->type = COMMAND_TRAIN;
 	command->target = 0;
 	command->path = NULL;
 	command->child = NULL;

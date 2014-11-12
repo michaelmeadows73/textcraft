@@ -100,6 +100,7 @@ struct command* build_create(target)
 long target;
 {
 	struct command* build = command_create();
+	build->type = COMMAND_BUILD;
 	build->target = target;
 	build->execute = build_execute;
 	build->desc = "Building Farm";

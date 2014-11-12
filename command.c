@@ -5,6 +5,7 @@
 void command_init(command)
 struct command* command;
 {
+	command->type = 0;
 	command->target = 0;
 	command->targetentity = NULL;	
 	command->path = NULL;

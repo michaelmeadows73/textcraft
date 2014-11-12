@@ -68,16 +68,15 @@ struct map* map;
 					// if target entity can attack or flee
 					if (command->targetentity->type == TYPE_PEASANT)
 					{
-						
 						// if target entity is not fleeing and has low health - stop
-						if (command->targetentity->command && command->targetentity->command->execute != flee_execute && command->targetentity->health <= 33)
+						if (command->targetentity->command && command->targetentity->command->type != COMMAND_FLEE && command->targetentity->health <= 33)
 						{
 							command_destroy(command->targetentity->command);
 							command->targetentity->command = NULL;
 						}
 
 						// if target entity is not attacking and has high health - stop
-						if (command->targetentity->command && command->targetentity->command->execute != attack_execute && command->targetentity->health > 33) 
+						if (command->targetentity->command && command->targetentity->command->type != COMMAND_ATTACK && command->targetentity->health > 33) 
 						{
 							command_destroy(command->targetentity->command);
 							command->targetentity->command = NULL;
@@ -149,6 +148,7 @@ struct command* attack_create(target)
 long target;
 {
 	struct command* command = command_create();
+	command->type = COMMAND_ATTACK;
 	command->target = target;
 	command->path = NULL;
 	command->child = NULL;
