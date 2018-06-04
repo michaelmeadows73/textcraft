@@ -5,6 +5,8 @@
 #include "map.h"
 #include "point.h"
 
+// some comment
+
 int flee_execute(command, entity, map)
 struct command* command;
 struct entity* entity;
